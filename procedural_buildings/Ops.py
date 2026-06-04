@@ -513,7 +513,6 @@ class OpNil(Op):
 
 # Create an inset (recessed panel with frame) in the current scope
 class OpInset(Op):
-
     opName = "inset"
 
     def run(self, context, scope, env):

@@ -104,8 +104,12 @@ class Scope:
         top = Scope(self.pos + self.rotMat.dot(np.array([0, 0, s[2] - d])), self.rotMat, np.array([s[0], s[1], d]))
         bottom = Scope(self.pos, self.rotMat, np.array([s[0], s[1], d]))
         left = Scope(self.pos + self.rotMat.dot(np.array([0, 0, d])), self.rotMat, np.array([d, s[1], s[2] - 2 * d]))
-        right = Scope(self.pos + self.rotMat.dot(np.array([s[0] - d, 0, d])), self.rotMat, np.array([d, s[1], s[2] - 2 * d]))
-        inner = Scope(self.pos + self.rotMat.dot(np.array([d, d, d])), self.rotMat, np.array([s[0] - 2 * d, s[1], s[2] - 2 * d]))
+        right = Scope(
+            self.pos + self.rotMat.dot(np.array([s[0] - d, 0, d])), self.rotMat, np.array([d, s[1], s[2] - 2 * d])
+        )
+        inner = Scope(
+            self.pos + self.rotMat.dot(np.array([d, d, d])), self.rotMat, np.array([s[0] - 2 * d, s[1], s[2] - 2 * d])
+        )
         return [top, bottom, left, right], inner
 
     # Return a scope that is restricted to just the given face
