@@ -259,6 +259,10 @@ class Parser(SlyParser):
     def decls(self, p):
         return
 
+    @_("")
+    def decls(self, p):
+        return
+
     @_("IDENT ASSIGN expr")
     def decl(self, p):
         override = get_grammar_var(p.IDENT, None)

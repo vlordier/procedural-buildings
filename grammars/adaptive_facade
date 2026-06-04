@@ -1,0 +1,6 @@
+# Adaptive facade: checks scope width to decide layout
+plot --> split(y){~1 : base | ~12 : facade | ~1 : roof}
+facade : width > 6 --> split(x){~1 : I(column) | ~4 : inset(0.3){I(rect) | I(window3)} | ~1 : I(column) | ~4 : inset(0.3){I(rect) | I(window3)} | ~1 : I(column)}
+facade : width <= 6 --> split(x){~1 : I(column) | ~4 : inset(0.3){I(rect) | I(window3)} | ~1 : I(column)}
+base --> colour(0.4, 0.35, 0.3){I(rect)}
+roof --> colour(0.5, 0.2, 0.1){I(pediment)}

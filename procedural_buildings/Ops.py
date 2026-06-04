@@ -361,8 +361,14 @@ class OpChooseRuleWithPriority(Op):
         return self.childOps[filteredPriorities[i][0]]
 
     def run(self, context, scope, env):
-        # Choose a child based on priorities and conditions and run that child
-        self.chooseChild(env).run(context, scope, env)
+        scope_env = {
+            **env,
+            "width": scope.size[0],
+            "depth": scope.size[1],
+            "height": scope.size[2],
+        }
+        child = self.chooseChild(scope_env)
+        child.run(context, scope, env)
 
     def exampleTree(self, env):
         return self.chooseChild(env).exampleTree(env)
