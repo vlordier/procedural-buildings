@@ -98,6 +98,16 @@ class Scope:
         # just split with n split sections each of relative size 1
         return self.split(axis, [Size(1, True)] * n)
 
+    def inset(self, amount):
+        s = self.size
+        d = amount
+        top = Scope(self.pos + self.rotMat.dot(np.array([0, 0, s[2] - d])), self.rotMat, np.array([s[0], d, 0]))
+        bottom = Scope(self.pos + self.rotMat.dot(np.array([0, 0, 0])), self.rotMat, np.array([s[0], d, 0]))
+        left = Scope(self.pos + self.rotMat.dot(np.array([0, d, 0])), self.rotMat, np.array([d, s[1] - 2 * d, 0]))
+        right = Scope(self.pos + self.rotMat.dot(np.array([s[0] - d, d, 0])), self.rotMat, np.array([d, s[1] - 2 * d, 0]))
+        inner = Scope(self.pos + self.rotMat.dot(np.array([d, d, 0])), self.rotMat, np.array([s[0] - 2 * d, s[1] - 2 * d, 0]))
+        return [top, bottom, left, right], inner
+
     # Return a scope that is restricted to just the given face
     def comp(self, face):
         s = self.size
