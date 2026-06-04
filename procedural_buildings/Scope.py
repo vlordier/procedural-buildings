@@ -112,6 +112,20 @@ class Scope:
         )
         return [top, bottom, left, right], inner
 
+    def opening(self, depth):
+        s = self.size
+        d = depth
+        top = self.translate(np.array([0, 0, s[2] - d]))
+        top.size = np.array([s[0], s[1], d])
+        bottom = Scope(self.pos, self.rotMat, np.array([s[0], s[1], d]))
+        left = self.translate(np.array([0, 0, d]))
+        left.size = np.array([d, s[1], s[2] - 2 * d])
+        right = self.translate(np.array([s[0] - d, 0, d]))
+        right.size = np.array([d, s[1], s[2] - 2 * d])
+        child = self.translate(np.array([0, d, 0]))
+        child.size = np.array([s[0], 0, s[2]])
+        return [top, bottom, left, right], child
+
     # Return a scope that is restricted to just the given face
     def comp(self, face):
         s = self.size
