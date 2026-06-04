@@ -89,7 +89,7 @@ class Processor:
 
     # Given a set of example object files, construct a grammar representing the examples
     def objsToGrammar(self, objFiles, grammarFile):
-        opGraph, prims = self.objsToOpGraph(objFiles)
+        opGraph, _prims = self.objsToOpGraph(objFiles)
         print("Creating grammar from op graph")
         grammarText = opGraph.toGrammarText()
         print("Writing grammar to file")
@@ -140,11 +140,3 @@ class Processor:
         print("max depth\tmax branch\tnum prims\top-to-obj time\tobj-to-op time")
         for r in results:
             print("\t\t".join(str(x) for x in r))
-
-
-# Modern house example
-if __name__ == "__main__":
-    startScope = Scope.freshScope(np.array([0, 0, 0]), np.array([10, 10, 1.5]))
-    p = Processor()
-    objFiles = p.grammarToManyObjFiles("city", "plot", startScope, 10, "temp")
-    p.objsToObjs(objFiles, startScope, 10, 10, "outputs/city_gen.obj")

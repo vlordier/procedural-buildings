@@ -1,3 +1,5 @@
+import re
+
 from .Checker import Checker
 from .Lexer import Lexer
 from .Parser import Parser
@@ -11,7 +13,5 @@ class GrammarParser(ParserAbstract):
         checker = Checker()
         if not grammar.endswith("\n"):
             grammar += "\n"
-        import re
-
         grammar = re.sub(r"^\d+:\s*", "", grammar, flags=re.MULTILINE)
         return checker.check(parser.parse(lexer.tokenize(grammar)))

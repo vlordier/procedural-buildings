@@ -22,8 +22,8 @@ def objToOpGraph(fname, primDict=None):
         i = 2
         while lines[i][0:2] == "v ":
             coords = [round(float(c), 6) for c in lines[i].split(" ")[1:4]]
-            minCoords = [min(a, b) for a, b in zip(minCoords, coords, strict=False)]
-            maxCoords = [max(a, b) for a, b in zip(maxCoords, coords, strict=False)]
+            minCoords = [min(a, b) for a, b in zip(minCoords, coords, strict=True)]
+            maxCoords = [max(a, b) for a, b in zip(maxCoords, coords, strict=True)]
             i += 1
 
         # If we haven't seen this primitive object before then save it
@@ -33,7 +33,7 @@ def objToOpGraph(fname, primDict=None):
             primDict[primName] = p
 
         # Create a bounding box for the primitive object
-        box = Box([[a, b] for (a, b) in zip(minCoords, maxCoords, strict=False)], primName)
+        box = Box([[a, b] for (a, b) in zip(minCoords, maxCoords, strict=True)], primName)
         boxes.append(box)
         # Add the box to the box-bounding container
         container.addBox(box)

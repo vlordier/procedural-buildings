@@ -1,4 +1,4 @@
-# ruff: noqa: F821, F811, F405
+# ruff: noqa: F821, F811
 from numpy import pi
 from sly import Parser as SlyParser
 from sympy import Eq, Ne, symbols

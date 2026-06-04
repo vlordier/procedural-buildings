@@ -6,7 +6,7 @@ from .parsing.Rule import Size
 
 
 class Scope:
-    axisVector = [np.array([1, 0, 0]), np.array([0, 1, 0]), np.array([0, 0, 1])]
+    _AXIS_VECTORS = [np.array([1, 0, 0]), np.array([0, 1, 0]), np.array([0, 0, 1])]
 
     # Create a new scope using the given position, rotation and size
     def __init__(self, pos, rotMat, size):
@@ -29,7 +29,7 @@ class Scope:
 
     # Return a new scope with the given size
     def resize(self, newSize):
-        size = [s.size * t if s.isRelative else s.size for (s, t) in zip(newSize, self.size, strict=False)]
+        size = [s.size * t if s.isRelative else s.size for (s, t) in zip(newSize, self.size, strict=True)]
         return Scope(self.pos, self.rotMat, np.array(size))
 
     # Return a new scope with each axis scaled by the given factor(s)
@@ -61,6 +61,7 @@ class Scope:
 
     # Create a new scope with the given position and size
     # The rotation on each axis of this new scope is 0
+    @staticmethod
     def freshScope(pos, size):
         I3 = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         return Scope(pos, I3, size)
@@ -69,7 +70,7 @@ class Scope:
     # splitSizes. Returns a list of scopes representing each split section.
     def split(self, axis, splitSizes):
         newScopes = []
-        axisVector = self.axisVector[axis]
+        axisVector = self._AXIS_VECTORS[axis]
         unchangedSizes = self.size * (1 - axisVector)
         offset = np.array([0, 0, 0])
         # Calculate the scale factor for any relative sizes

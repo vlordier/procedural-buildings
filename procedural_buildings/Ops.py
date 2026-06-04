@@ -70,7 +70,7 @@ class Args:
         if t1 in (list, tuple):
             if t2 is t1 and len(arg1) == len(arg2):
                 newListArg = []
-                for a1, a2 in zip(arg1, arg2, strict=False):
+                for a1, a2 in zip(arg1, arg2, strict=True):
                     newArg = self.combineArgs(a1, a2)
                     if newArg is None:
                         return None
@@ -216,7 +216,7 @@ class Op:
     def toGrammarText(self):
         MAX_RULES = 10000
         ruleNum = iter(range(MAX_RULES))
-        ruleLabel, grammarText = self._toGrammarText(ruleNum)
+        _, grammarText = self._toGrammarText(ruleNum)
         return grammarText
 
     def _toGrammarText(self, ruleNum):
@@ -239,7 +239,7 @@ class Op:
                     childArgs.append(childLabel)
                     childText += cText
             else:
-                for arg, c in zip(self.args.perChildArgs, self.childOps, strict=False):
+                for arg, c in zip(self.args.perChildArgs, self.childOps, strict=True):
                     childLabel, cText = c._toGrammarText(ruleNum)
                     childArgs.append(f"{arg} : {childLabel}")
                     childText += cText
@@ -255,7 +255,7 @@ class OpSplit(Op):
     def run(self, context, scope, env):
         axis, sizes = self.args.evaluate(env)
         childScopes = scope.split(axis, sizes)
-        for childOp, childScope in zip(self.childOps, childScopes, strict=False):
+        for childOp, childScope in zip(self.childOps, childScopes, strict=True):
             childOp.run(context, childScope, env)
 
     def simplify(self, seenOps, combArgs=False):
@@ -328,7 +328,7 @@ class OpComp(Op):
     def run(self, context, scope, env):
         faces = self.args[0]
         childScopes = [scope.comp(face) for face in faces]
-        for childOp, childScope in zip(self.childOps, childScopes, strict=False):
+        for childOp, childScope in zip(self.childOps, childScopes, strict=True):
             childOp.run(context, childScope, env)
 
 
@@ -432,7 +432,7 @@ class OpChooseRuleWithPriority(Op):
         self.ruleLabel = label
         childText = ""
         text = ""
-        for c, p in zip(self.childOps, self.args[0][0], strict=False):
+        for c, p in zip(self.childOps, self.args[0][0], strict=True):
             childLabel, cText = c._toGrammarText(ruleNum)
             text += f"{label} --> {childLabel} : %.5f\n" % p
             childText += cText
@@ -517,7 +517,7 @@ class OpSetParams(Op):
         paramVals = self.args.evaluate(env)
         child = self.childOps[0]
         envNew = env.copy()
-        envNew.update(zip(child.paramNames, paramVals, strict=False))
+        envNew.update(zip(child.paramNames, paramVals, strict=True))
         return OpSetParams(paramVals, childOps=[child.exampleTree(envNew)])
 
     def run(self, context, scope, env):
@@ -528,5 +528,5 @@ class OpSetParams(Op):
         child = self.childOps[0]
         # Update the environment with the param values
         envNew = env.copy()
-        envNew.update(zip(child.paramNames, paramVals, strict=False))
+        envNew.update(zip(child.paramNames, paramVals, strict=True))
         child.run(context, scope, envNew)

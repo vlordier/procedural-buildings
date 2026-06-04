@@ -51,7 +51,7 @@ class Primitive:
             i += 1
         self.otherData.extend([line + "\n" for line in lines[i:]])
         self.verts = np.array(verts)
-        self.boundingBox = Box(zip(minCoords, maxCoords, strict=False), self.name)
+        self.boundingBox = Box(zip(minCoords, maxCoords, strict=True), self.name)
 
 
 # Given a file containing only one object,

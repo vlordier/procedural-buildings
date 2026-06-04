@@ -1,6 +1,4 @@
-# ruff: noqa: F403
 from ..Ops import Op, OpChooseRuleWithPriority
-from .Rule import *
 
 
 class Checker:

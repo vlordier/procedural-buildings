@@ -23,7 +23,7 @@ def main(argv):
     startScope = Scope.freshScope(np.array([0, 0, 0]), np.array(DEFAULT_SCOPE_SIZE))
     usage = "Usage:\nprocedural_buildings -i <input_file> -o <output_file> [-s | --start_scope <x_min,y_min,z_min,x_max,y_max,z_max>] [-R | --start_rule <start_rule>] [-r | --reverse] [-n <num_buildings>] [-d | --separation <separation_distance>] [-f | --file_per_obj]"
     try:
-        opts, args = getopt.getopt(
+        opts, _args = getopt.getopt(
             argv,
             "hi:o:s:R:rn:d:f",
             ["ifile=", "ofile=", "start_scope=", "start_rule=", "reverse", "separation=", "file_per_obj"],
