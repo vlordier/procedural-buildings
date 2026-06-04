@@ -550,7 +550,6 @@ class OpInset(Op):
 
 # Create a wall opening (hole) for doors, windows, garage doors
 class OpOpening(Op):
-
     opName = "opening"
 
     def run(self, context, scope, env):
