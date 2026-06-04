@@ -45,3 +45,4 @@ coverage.xml
 .spyproject
 uv.lock
 .venv/
+outputs/

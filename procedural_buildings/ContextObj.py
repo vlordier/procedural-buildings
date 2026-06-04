@@ -1,3 +1,4 @@
+from ._constants import COLOUR_FMT_PRECISION
 from .Primitive import basicPrims
 
 
@@ -23,7 +24,7 @@ class ContextOBJ:
         self.objFileText.append(f"o {primName}")
         if self.currentColour:
             self.objFileText.append(
-                f" # colour({self.currentColour[0]:.4f},{self.currentColour[1]:.4f},{self.currentColour[2]:.4f})"
+                f" # colour({self.currentColour[0]:.{COLOUR_FMT_PRECISION}f},{self.currentColour[1]:.{COLOUR_FMT_PRECISION}f},{self.currentColour[2]:.{COLOUR_FMT_PRECISION}f})"
             )
         self.objFileText.append("\n")
         self.objFileText.extend(self.vertsToObjText(newVerts))

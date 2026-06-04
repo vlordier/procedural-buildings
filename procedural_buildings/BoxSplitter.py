@@ -2,6 +2,7 @@ from itertools import cycle
 
 import numpy as np
 
+from ._constants import MAX_CONSECUTIVE_FAILURES, NUM_AXES
 from .Ops import OpNil, OpPrimitive, OpSplit
 from .parsing.Rule import Size
 
@@ -50,8 +51,8 @@ class Container:
         self.axis = axis
         self.children = []
         self.unmatched = 0
-        self.prevAxis = (axis - 1) % 3
-        self.nextAxis = (axis + 1) % 3
+        self.prevAxis = (axis - 1) % NUM_AXES
+        self.nextAxis = (axis + 1) % NUM_AXES
         self.numPrims = 0
         self.child = None
         self.isPrim = False
@@ -117,7 +118,7 @@ class Container:
         if self.bounds is None:
             self.bounds = [b[:] for b in box.boundVals]
         else:
-            for ax in range(3):
+            for ax in range(NUM_AXES):
                 if box.boundVals[ax][0] < self.bounds[ax][0]:
                     self.bounds[ax][0] = box.boundVals[ax][0]
                 if box.boundVals[ax][1] > self.bounds[ax][1]:
@@ -188,15 +189,15 @@ def boxesToOp(boxes, initialContainer):
 
     bounds = [
         sorted((bound for b in boxes for bound in (b.bounds[ax][0], b.bounds[ax][1])), key=lambda b: (b.val, b.low))
-        for ax in (0, 1, 2)
+        for ax in range(NUM_AXES)
     ]
 
-    axis = cycle((0, 1, 2))
+    axis = cycle(range(NUM_AXES))
     allPrimitiveContainers = False
     consecutiveFailCount = 0
 
     # We have finished when all boxes' containers are primitive containers
-    while not allPrimitiveContainers and consecutiveFailCount < 6:
+    while not allPrimitiveContainers and consecutiveFailCount < MAX_CONSECUTIVE_FAILURES:
         allPrimitiveContainers = True
         ax = next(axis)
         didAnySplit = False
@@ -220,7 +221,7 @@ def boxesToOp(boxes, initialContainer):
         else:
             consecutiveFailCount += 1
 
-    if consecutiveFailCount == 6 and not allPrimitiveContainers:
+    if consecutiveFailCount == MAX_CONSECUTIVE_FAILURES and not allPrimitiveContainers:
         print([b.bounds for b in boxes])
         print([b.container for b in boxes])
         print([b.container.bounds for b in boxes])

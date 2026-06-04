@@ -6,6 +6,7 @@ from sympy.core.numbers import Integer
 from sympy.core.relational import Relational
 from sympy.logic.boolalg import BooleanAtom
 
+from ._constants import MAX_TOSTRING_DEPTH
 from .parsing.Rule import Size
 from .RandRange import RandRange
 
@@ -135,7 +136,7 @@ class Op:
 
         if self.childOps and len(self.childOps) > 0:
             s += "\n"
-            if indent > 50:
+            if indent > MAX_TOSTRING_DEPTH:
                 s += "...\n"
             newIndent = indent + 1
             s += "\n".join([c.toString(newIndent) if not isinstance(c, str) else c for c in self.childOps])
@@ -334,7 +335,6 @@ class OpComp(Op):
 
 # Colour current context
 class OpColour(Op):
-
     opName = "colour"
 
     def run(self, context, scope, env):

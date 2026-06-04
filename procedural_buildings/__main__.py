@@ -6,11 +6,9 @@ from os import sep as path_sep
 import gin
 import numpy as np
 
+from ._constants import DEFAULT_SCOPE_SIZE, DEFAULT_SEPARATION, NUM_SCOPE_COORDS
 from .Processor import Processor
 from .Scope import Scope
-
-DEFAULT_SEP = 10
-DEFAULT_SCOPE_SIZE = [10, 10, 10]
 
 
 def main(argv):
@@ -18,7 +16,7 @@ def main(argv):
     outFile = ""
     rev = False
     n = 1
-    sep = DEFAULT_SEP
+    sep = DEFAULT_SEPARATION
     filePerObj = False
     startRule = "plot"
     startScope = Scope.freshScope(np.array([0, 0, 0]), np.array(DEFAULT_SCOPE_SIZE))
@@ -37,9 +35,15 @@ def main(argv):
             argv,
             "hi:o:s:R:rn:d:fg:p:",
             [
-                "ifile=", "ofile=", "start_scope=", "start_rule=",
-                "reverse", "separation=", "file_per_obj",
-                "gin_file=", "gin_param=",
+                "ifile=",
+                "ofile=",
+                "start_scope=",
+                "start_rule=",
+                "reverse",
+                "separation=",
+                "file_per_obj",
+                "gin_file=",
+                "gin_param=",
             ],
         )
     except getopt.GetoptError:
@@ -57,7 +61,7 @@ def main(argv):
         elif opt in ("-s", "--start_scope"):
             try:
                 coords = [int(coord) for coord in arg.split(",")]
-                assert len(coords) == 6
+                assert len(coords) == NUM_SCOPE_COORDS
                 startScope = Scope.freshScope(np.array(coords[:3]), np.array(coords[3:]))
             except (ValueError, AssertionError):
                 print("Invalid scope argument.")

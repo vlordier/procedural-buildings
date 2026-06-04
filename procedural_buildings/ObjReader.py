@@ -1,3 +1,4 @@
+from ._constants import OBJ_COORD_PRECISION
 from .BoxSplitter import Box, Container, boxesToOp
 from .Ops import Op
 from .Primitive import Primitive, basicPrims
@@ -16,12 +17,12 @@ def objToOpGraph(fname, primDict=None):
     for primData in splitData:
         lines = primData.split("\n")
         primName = lines[0]
-        firstCoords = [round(float(c), 6) for c in lines[1].split(" ")[1:4]]
+        firstCoords = [round(float(c), OBJ_COORD_PRECISION) for c in lines[1].split(" ")[1:4]]
         minCoords = firstCoords
         maxCoords = firstCoords
         i = 2
         while lines[i][0:2] == "v ":
-            coords = [round(float(c), 6) for c in lines[i].split(" ")[1:4]]
+            coords = [round(float(c), OBJ_COORD_PRECISION) for c in lines[i].split(" ")[1:4]]
             minCoords = [min(a, b) for a, b in zip(minCoords, coords, strict=True)]
             maxCoords = [max(a, b) for a, b in zip(maxCoords, coords, strict=True)]
             i += 1

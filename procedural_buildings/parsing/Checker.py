@@ -1,3 +1,4 @@
+from .._constants import DEFAULT_RULE_PRIORITY
 from ..Ops import Op, OpChooseRuleWithPriority
 
 
@@ -13,7 +14,7 @@ class Checker:
 
     def createPriorityRule(self, rules):
         childOps = [r.op for r in rules]
-        priorities = tuple(1 if r.priority is None else r.priority for r in rules)
+        priorities = tuple(DEFAULT_RULE_PRIORITY if r.priority is None else r.priority for r in rules)
         conditions = tuple(r.condition for r in rules)
         newOp = OpChooseRuleWithPriority(perChildArgs=(priorities, conditions), childOps=childOps)
         if hasattr(childOps[0], "paramNames"):

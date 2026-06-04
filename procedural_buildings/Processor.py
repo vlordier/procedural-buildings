@@ -1,18 +1,19 @@
 from os import makedirs
-from os.path import exists
 from os import sep as path_sep
+from os.path import exists
 from time import time
 
 import gin
 import numpy as np
 
+from ._constants import NUM_PRIMS_SCALE_FACTOR, SPEEDTEST_REPEATS, SPEEDTEST_SCOPE_SIZE
 from .ContextObj import ContextOBJ
 from .ObjReader import objsToOpGraph, objToOpGraph
 from .Ops import OpNil, OpRepeat, OpSplit
-from .RandomOpGraph import genRandOpGraph
-from .Scope import Scope
 from .parsing.GrammarParser import GrammarParser
 from .parsing.Rule import Size
+from .RandomOpGraph import genRandOpGraph
+from .Scope import Scope
 
 
 @gin.configurable
@@ -111,10 +112,10 @@ class Processor:
     # Run a speed test by generating many operation graphs, turning those into
     # object files and then inferring operation graphs from those object files
     def speedTest(self, maxDepth, maxBranch):
-        startScope = Scope.freshScope(np.array([0, 0, 0]), np.array([1000, 1000, 1000]))
+        startScope = Scope.freshScope(np.array([0, 0, 0]), np.full(3, SPEEDTEST_SCOPE_SIZE))
         results = []
         # repeats determines how many tests we run for each combination of op graph parameters
-        repeats = 5
+        repeats = SPEEDTEST_REPEATS
         for depth in range(1, maxDepth):
             for branch in range(1, maxBranch):
                 maxPrims = branch**depth
@@ -137,7 +138,7 @@ class Processor:
                     opToObj = sum(runs[0]) / repeats
                     objToOp = sum(runs[1]) / repeats
                     results.append([depth, branch, numPrims, round(opToObj, 3), round(objToOp, 3)])
-                    numPrims *= 2
+                    numPrims *= NUM_PRIMS_SCALE_FACTOR
 
         print("max depth\tmax branch\tnum prims\top-to-obj time\tobj-to-op time")
         for r in results:

@@ -1,7 +1,9 @@
 import re
 import sys
+
 import numpy as np
 import trimesh
+
 
 def obj_to_colored_glb(obj_path, glb_path):
     with open(obj_path) as f:
@@ -42,6 +44,7 @@ def obj_to_colored_glb(obj_path, glb_path):
     mesh.visual.face_colors = (colors_a * 255).astype(np.uint8)
     mesh.export(glb_path)
     print(f"{glb_path}: {len(verts)} verts, {len(faces)} faces, colored")
+
 
 if __name__ == "__main__":
     for name in sys.argv[1:]:

@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 
+from ._constants import OBJ_COORD_PRECISION
 from .BoxSplitter import Box
 
 
@@ -19,12 +20,12 @@ class Primitive:
         verts = []
         i += 1
         startOfVerts = i
-        firstCoords = [round(float(c), 6) for c in lines[i].split(" ")[1:4]]
+        firstCoords = [round(float(c), OBJ_COORD_PRECISION) for c in lines[i].split(" ")[1:4]]
         minCoords = firstCoords[:]
         maxCoords = firstCoords[:]
         # Read the vertex data in the .obj file
         while lines[i][0:2] == "v ":
-            coords = [round(float(c), 6) for c in lines[i].split(" ")[1:4]]
+            coords = [round(float(c), OBJ_COORD_PRECISION) for c in lines[i].split(" ")[1:4]]
             coords.append(1)
             for j in range(3):
                 if coords[j] < minCoords[j]:
