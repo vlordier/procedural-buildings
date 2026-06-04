@@ -365,7 +365,10 @@ class Parser(SlyParser):
 
     @_("INT")
     def axis(self, p):
-        return p.INT
+        val = p.INT
+        if val not in (0, 1, 2):
+            raise RuntimeError(f"Axis must be 0, 1, or 2; got {val}")
+        return val
 
     @_("IDENT")
     def axis(self, p):

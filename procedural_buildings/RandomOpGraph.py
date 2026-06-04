@@ -9,7 +9,7 @@ from .parsing.Rule import Size
 # Generate a random operation graph with the given parameters
 def genRandOpGraph(maxDepth, maxBranch, numPrims):
     if numPrims > maxBranch**maxDepth:
-        return RuntimeError("Can't fit this many prims in tree with these params")
+        raise RuntimeError("Can't fit this many prims in tree with these params")
     return randSplit(0, maxDepth, maxBranch, numPrims)
 
 

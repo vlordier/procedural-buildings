@@ -16,6 +16,8 @@ class ContextOBJ:
         if primName not in self.prims:
             print(f"Failed to find prim with name: {primName}")
             print(f"Available prims:\n{self.prims.keys()}")
+            if "rect" not in self.prims:
+                raise KeyError(f"No fallback primitive 'rect' available. Primitives found: {list(self.prims.keys())}")
             print("Just going to use a box")
             prim = self.prims["rect"]
         else:

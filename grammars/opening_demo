@@ -1,7 +1,23 @@
-# Opening demo: doors, windows through walls
+# Opening demo with procedural colors via gin-config
+# Override with: -p 'grammar_var_overrides.values = {"door_r": 0.6, "door_g": 0.3, "door_b": 0.2}'
+door_r = 0.6
+door_g = 0.3
+door_b = 0.2
+window_r = 0.4
+window_g = 0.6
+window_b = 0.8
+frame_r = 0.9
+frame_g = 0.85
+frame_b = 0.8
+wall_r = 0.4
+wall_g = 0.35
+wall_b = 0.3
+roof_r = 0.5
+roof_g = 0.2
+roof_b = 0.1
 plot --> split(y){~1 : base | ~12 : facade | ~1 : roof}
 facade --> split(x){~3 : doorway | ~3 : window_bay | ~3 : doorway | ~3 : window_bay}
-doorway --> opening(0){I(rect) | I(door)}
-window_bay --> opening(0.3){I(rect) | I(window3)}
-base --> colour(0.4, 0.35, 0.3){I(rect)}
-roof --> colour(0.5, 0.2, 0.1){I(pediment)}
+doorway --> opening(0){colour(frame_r, frame_g, frame_b){I(rect)} | colour(door_r, door_g, door_b){I(door)}}
+window_bay --> opening(0.3){colour(frame_r, frame_g, frame_b){I(rect)} | colour(window_r, window_g, window_b){I(window3)}}
+base --> colour(wall_r, wall_g, wall_b){I(rect)}
+roof --> colour(roof_r, roof_g, roof_b){I(pediment)}

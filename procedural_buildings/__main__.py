@@ -72,9 +72,22 @@ def main(argv):
         elif opt in ("-r", "--reverse"):
             rev = True
         elif opt == "-n":
-            n = int(arg)
+            try:
+                n = int(arg)
+                if n < 1:
+                    print("Error: -n must be a positive integer")
+                    sys.exit(2)
+            except ValueError:
+                print("Error: -n must be a positive integer")
+                sys.exit(2)
         elif opt in ("-d", "--separation"):
-            sep = float(arg)
+            try:
+                sep = float(arg)
+                if sep < 0:
+                    sep = 0
+            except ValueError:
+                print("Error: -d must be a number")
+                sys.exit(2)
         elif opt in ("-f", "--file_per_obj"):
             filePerObj = True
         elif opt in ("-g", "--gin_file"):
@@ -90,9 +103,10 @@ def main(argv):
     gin.parse_config_files_and_bindings(ginFiles, ginParams)
 
     p = Processor()
-    p.grammarDir = getcwd() + path_sep
-    p.outputDir = p.grammarDir
-    p.engineeredDir = p.grammarDir
+    if not ginFiles:
+        p.grammarDir = getcwd() + path_sep
+        p.outputDir = p.grammarDir
+        p.engineeredDir = p.grammarDir
     if rev:
         if inFile.split(".")[-1] == "obj":
             objFiles = [inFile]

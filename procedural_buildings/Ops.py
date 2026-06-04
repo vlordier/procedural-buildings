@@ -210,8 +210,11 @@ class Op:
         return self.combineMany(examples)
 
     @staticmethod
+    @staticmethod
     def combineMany(ops):
         n = len(ops)
+        if n == 0:
+            return OpNil()
         return OpChooseRuleWithPriority(perChildArgs=((1 / n,) * n, (True,) * n), childOps=ops).simplify({}, True)
 
     def toGrammarText(self):
@@ -348,11 +351,13 @@ class OpColour(Op):
 class OpChooseRuleWithPriority(Op):
     def chooseChild(self, env):
         priorities, conditions = self.args.evaluate(env)[0]
-        # remove children whose conditions fail
-        # remember the index of the valid children in the original list though
         filteredPriorities = [(i, p) for i, p in enumerate(priorities) if conditions[i]]
-        # Pick a random number less than the max cumulative priority
-        rand = random() * sum(x[1] for x in filteredPriorities)
+        if not filteredPriorities:
+            raise RuntimeError("No matching rules: all conditions are False or all priorities are 0")
+        total = sum(x[1] for x in filteredPriorities)
+        if total <= 0:
+            raise RuntimeError(f"No matching rules: total priority is {total}")
+        rand = random() * total
         i = 0
         cumulativePriority = filteredPriorities[0][1]
         while cumulativePriority < rand:

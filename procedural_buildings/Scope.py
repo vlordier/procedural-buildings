@@ -90,6 +90,8 @@ class Scope:
     # Split the scope in given direction in to n equal-sized scopes
     # where n = ceil(self.size[axis] / size)
     def repeat(self, axis, size):
+        if size <= 0:
+            raise ValueError(f"repeat size must be positive, got {size}")
         numRepeats = ceil(self.size[axis] / size)
         return self.repeatN(axis, numRepeats)
 
@@ -99,6 +101,10 @@ class Scope:
         return self.split(axis, [Size(1, True)] * n)
 
     def inset(self, amount):
+        if amount <= 0:
+            raise ValueError(f"inset amount must be positive, got {amount}")
+        if 2 * amount >= self.size[0] or 2 * amount >= self.size[2]:
+            raise ValueError(f"inset amount {amount} exceeds scope size {self.size}")
         s = self.size
         d = amount
         top = Scope(self.pos + self.rotMat.dot(np.array([0, 0, s[2] - d])), self.rotMat, np.array([s[0], s[1], d]))
@@ -113,6 +119,10 @@ class Scope:
         return [top, bottom, left, right], inner
 
     def opening(self, depth):
+        if depth < 0:
+            raise ValueError(f"opening depth must be non-negative, got {depth}")
+        if depth >= self.size[2]:
+            raise ValueError(f"opening depth {depth} exceeds scope height {self.size[2]}")
         s = self.size
         d = depth
         top = self.translate(np.array([0, 0, s[2] - d]))
