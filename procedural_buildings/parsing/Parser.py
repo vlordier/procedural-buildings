@@ -144,6 +144,10 @@ class Parser(SlyParser):
     def singleOp(self, p):
         return OpColour(*p.col)
 
+    @_("COLOUR col LCURL singleOp RCURL")
+    def singleOp(self, p):
+        return OpColour(*p.col, childOps=[p.singleOp])
+
     @_("ROTATE LPAR axis COMMA expr RPAR LCURL singleOp RCURL")
     def singleOp(self, p):
         return OpRotate(p.axis, p.expr, childOps=[p.singleOp])

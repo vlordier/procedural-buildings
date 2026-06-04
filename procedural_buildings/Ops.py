@@ -334,11 +334,14 @@ class OpComp(Op):
 
 # Colour current context
 class OpColour(Op):
+
     opName = "colour"
 
     def run(self, context, scope, env):
         col = self.args.evaluate(env)
         context.colour(col, scope)
+        if self.childOps:
+            self.childOps[0].run(context, scope, env)
 
 
 # Given a list of rules, choose one at random according to their priorirties
