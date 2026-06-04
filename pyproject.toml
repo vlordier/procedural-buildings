@@ -1,0 +1,18 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.format]
+preview = true
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "SIM", "B", "C4"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["INP001", "F403", "F405"]
+"grammars/*" = ["ALL"]
+"legacy/*" = ["ALL"]
+"blender/*.py" = ["F821", "F401", "E402"]
+"outputs/*" = ["ALL"]
+"engineered/*" = ["ALL"]

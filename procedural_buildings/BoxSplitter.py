@@ -1,7 +1,10 @@
-from .parsing.Rule import Size
-from .Ops import OpSplit, OpNil, OpPrimitive
 from itertools import cycle
+
 import numpy as np
+
+from .Ops import OpNil, OpPrimitive, OpSplit
+from .parsing.Rule import Size
+
 
 # Represents a bounding box for a primitive object
 class Box:
@@ -14,11 +17,14 @@ class Box:
         self.container = None
 
     def matToUnitSquare(self):
-        sx, sy, sz = [b-a for a,b in self.boundVals]
-        return np.array([[1/sx, 0, 0, -self.boundVals[0][0]/sx - 0.5],
-                         [0, 1/sy, 0, -self.boundVals[1][0]/sy - 0.5],
-                         [0, 0, 1/sz, -self.boundVals[2][0]/sz - 0.5],
-                         [0, 0, 0, 1]])
+        sx, sy, sz = [b - a for a, b in self.boundVals]
+        return np.array([
+            [1 / sx, 0, 0, -self.boundVals[0][0] / sx - 0.5],
+            [0, 1 / sy, 0, -self.boundVals[1][0] / sy - 0.5],
+            [0, 0, 1 / sz, -self.boundVals[2][0] / sz - 0.5],
+            [0, 0, 0, 1],
+        ])
+
 
 # Represents a bound for a box
 class Bound:
@@ -75,7 +81,7 @@ class Container:
     # If that child can now be split off and a new child started then do so
     def addToChild(self, box):
         self.unmatched -= 1
-        if self.child == None:
+        if self.child is None:
             self.resetChild()
         # Increase the size of child to also fit box
         self.child.expandToFit(box)
@@ -92,8 +98,7 @@ class Container:
                 self.children.append(box.container)
             else:
                 self.children.append(self.child)
-            improvedContainer = not (self.child.numPrims == self.numPrims and
-                                     self.child.bounds == self.bounds)
+            improvedContainer = not (self.child.numPrims == self.numPrims and self.child.bounds == self.bounds)
             self.resetChild()
         return improvedContainer
 
@@ -109,7 +114,7 @@ class Container:
     # Like expandToFit but adjust all axes
     def addBox(self, box):
         self.numPrims += 1
-        if self.bounds == None:
+        if self.bounds is None:
             self.bounds = [b[:] for b in box.boundVals]
         else:
             for ax in range(3):
@@ -151,13 +156,12 @@ class Container:
         if len(childOps) == 1:
             return childOps[0]
         else:
-            return OpSplit(self.axis,
-                           perChildArgs=tuple(sizes),
-                           childOps=childOps)
+            return OpSplit(self.axis, perChildArgs=tuple(sizes), childOps=childOps)
 
     # Check if this container exactly contains box
     def perfectlyContains(self, box):
         return self.bounds == box.boundVals
+
 
 # A contianer that perfectly contains a primitive operation
 class PrimContainer:
@@ -172,6 +176,7 @@ class PrimContainer:
     def toOp(self):
         return self.prim
 
+
 # Given a set of primitive-containing boxes and an initial container
 # that exactly bounds all the boxes, return a split operation that
 # places all the primitive boxes in their correct location when run
@@ -181,12 +186,12 @@ def boxesToOp(boxes, initialContainer):
     for box in boxes:
         box.container = initialContainer
 
-    bounds = [sorted(
-               (bound for b in boxes for bound in (b.bounds[ax][0], b.bounds[ax][1])),
-               key=lambda b: (b.val, b.low)
-              ) for ax in (0,1,2)]
+    bounds = [
+        sorted((bound for b in boxes for bound in (b.bounds[ax][0], b.bounds[ax][1])), key=lambda b: (b.val, b.low))
+        for ax in (0, 1, 2)
+    ]
 
-    axis = cycle((0,1,2))
+    axis = cycle((0, 1, 2))
     allPrimitiveContainers = False
     consecutiveFailCount = 0
 
@@ -221,22 +226,14 @@ def boxesToOp(boxes, initialContainer):
         print([b.container.bounds for b in boxes])
         raise RuntimeError("Failed to split boxes")
 
-
-
     return initialContainer.toOp()
 
 
-#boxes = [Box(x, f"prim{i}") for i, x in enumerate([[[0.0, 100.0], [0.0, 25.874126], [51.111111, 100.0]], [[0.0, 27.058824], [70.27972, 100.0], [0.0, 100.0]]])]
+# boxes = [Box(x, f"prim{i}") for i, x in enumerate([[[0.0, 100.0], [0.0, 25.874126], [51.111111, 100.0]], [[0.0, 27.058824], [70.27972, 100.0], [0.0, 100.0]]])]
 
-#initialContainer = Container(0)
-#for box in boxes:
+# initialContainer = Container(0)
+# for box in boxes:
 #    initialContainer.addBox(box)
-#initialContainer.setBounds([[0,23],[0,6],[0,12]])
+# initialContainer.setBounds([[0,23],[0,6],[0,12]])
 
-#print(boxesToOp(boxes, initialContainer))
-
-
-
-
-
-
+# print(boxesToOp(boxes, initialContainer))
