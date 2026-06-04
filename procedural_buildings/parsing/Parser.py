@@ -8,6 +8,7 @@ from ..Ops import (
     OpComp,
     OpInset,
     OpNil,
+    OpOpening,
     OpPrimitive,
     OpRepeat,
     OpRepeatN,
@@ -176,6 +177,10 @@ class Parser(SlyParser):
     @_("NIL")
     def singleOp(self, p):
         return OpNil()
+
+    @_("OPENING LPAR expr RPAR LCURL singleOp BAR singleOp RCURL")
+    def singleOp(self, p):
+        return OpOpening(p.expr, childOps=[p.singleOp0, p.singleOp1])
 
     @_("INSET LPAR expr RPAR LCURL singleOp BAR singleOp RCURL")
     def singleOp(self, p):
