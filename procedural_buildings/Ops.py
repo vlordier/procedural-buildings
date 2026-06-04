@@ -548,6 +548,35 @@ class OpInset(Op):
         return [self.__class__.__name__, self.args[0]]
 
 
+# Create a wall opening (hole) for doors, windows, garage doors
+class OpOpening(Op):
+
+    opName = "opening"
+
+    def run(self, context, scope, env):
+        (depth,) = self.args.evaluate(env)
+        frameOp = self.childOps[0]
+        innerOp = self.childOps[1]
+        frameScopes, childScope = scope.opening(depth)
+        for frameScope in frameScopes:
+            frameOp.run(context, frameScope, env)
+        innerOp.run(context, childScope, env)
+
+    def simplify(self, seenOps, combArgs=False):
+        childOps = [c.simplify(seenOps, combArgs) for c in self.childOps]
+        ident = ("OpOpening", self.args[0])
+        myHash = hash(ident)
+        if myHash in seenOps:
+            return seenOps[myHash]
+        newOp = OpOpening(self.args[0], childOps=childOps)
+        seenOps[myHash] = newOp
+        newOp.hash = myHash
+        return newOp
+
+    def argsToHash(self):
+        return [self.__class__.__name__, self.args[0]]
+
+
 # Sets the values of parameters in the environment
 class OpSetParams(Op):
     def exampleTree(self, env):
