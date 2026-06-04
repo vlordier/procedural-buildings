@@ -40,6 +40,7 @@ class Lexer(SlyLexer):
         RANDINT,
         PI,
         NIL,
+        OPENING,
         EQ,
         NEQ,
         GT,
@@ -71,6 +72,7 @@ class Lexer(SlyLexer):
     IDENT["randint"] = RANDINT
     IDENT["pi"] = PI
     IDENT["nil"] = NIL
+    IDENT["opening"] = OPENING
     IDENT["scale"] = SCALE
     IDENT["inset"] = INSET
 
