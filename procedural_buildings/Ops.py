@@ -1,14 +1,16 @@
-from random import random
-from .parsing.Rule import Size
-from sympy import boolalg, numbers
-from sympy.core.expr import Expr
-from sympy.core.relational import Relational
 from collections import defaultdict
+from random import random
+
+from sympy.core.expr import Expr
+from sympy.core.numbers import Integer
+from sympy.core.relational import Relational
+from sympy.logic.boolalg import BooleanAtom
+
+from .parsing.Rule import Size
 from .RandRange import RandRange
 
 
 class Args:
-
     def __init__(self, args, perChildArgs):
         self.args = args
         self.perChildArgs = perChildArgs
@@ -29,33 +31,33 @@ class Args:
 
     def evalArg(self, arg, env):
         t = type(arg)
-        if t == tuple:
+        if t is tuple:
             return tuple(self.evalArg(a, env) for a in arg)
-        elif t == Size:
+        elif t is Size:
             return Size(self.evalArg(arg.size, env), arg.isRelative)
-        elif t == int or t == str or t == float:
+        elif t in (int, str, float):
             return arg
         elif issubclass(t, RandRange):
             return arg.evaluate()
-        elif issubclass(t, Expr) or issubclass(t,Relational):
+        elif issubclass(t, Expr) or issubclass(t, Relational):
             evaled = arg.subs(env)
             if len(evaled.free_symbols) > 0:
                 return str(evaled)
-            elif issubclass(type(evaled), boolalg.BooleanAtom):
+            elif issubclass(type(evaled), BooleanAtom):
                 return bool(evaled)
-            elif issubclass(type(evaled), numbers.Integer):
+            elif issubclass(type(evaled), Integer):
                 return int(evaled)
             else:
                 return float(evaled)
         else:
-             return arg
+            return arg
 
     def combineWith(self, other):
         newArgs = self.combineArgs(self.args, other.args)
-        if newArgs == None:
+        if newArgs is None:
             return None
         newPerChildArgs = self.combineArgs(self.perChildArgs, other.perChildArgs)
-        if newPerChildArgs == None:
+        if newPerChildArgs is None:
             return None
         else:
             return Args(newArgs, perChildArgs=newPerChildArgs)
@@ -63,36 +65,33 @@ class Args:
     def combineArgs(self, arg1, arg2):
         if arg1 == arg2:
             return arg1
-        t1 = type(arg1); t2 = type(arg2)
-        if t1 == list or t1 == tuple:
-            if t2 == t1 and len(arg1) == len(arg2):
+        t1 = type(arg1)
+        t2 = type(arg2)
+        if t1 in (list, tuple):
+            if t2 is t1 and len(arg1) == len(arg2):
                 newListArg = []
-                for a1, a2 in zip(arg1, arg2):
+                for a1, a2 in zip(arg1, arg2, strict=False):
                     newArg = self.combineArgs(a1, a2)
-                    if newArg == None:
+                    if newArg is None:
                         return None
-                    else:
-                        newListArg.append(newArg)
-                return newListArg if t1 == list else tuple(newListArg)
-            else:
-                return None
-        elif t2 == list:
+                    newListArg.append(newArg)
+                return newListArg if t1 is list else tuple(newListArg)
+            return None
+        elif t2 is list:
             return None
 
-        elif t1 == Size:
-            if t2 == Size and arg1.isRelative == arg2.isRelative:
+        elif t1 is Size:
+            if t2 is Size and arg1.isRelative == arg2.isRelative:
                 newSizeVal = self.combineArgs(arg1.size, arg2.size)
                 return Size(newSizeVal, arg1.isRelative)
-            else:
-                return None
-        elif t2 == Size:
             return None
-        elif t1 == str:
-            if t2 == str and arg1 == arg2:
+        elif t2 is Size:
+            return None
+        elif t1 is str:
+            if t2 is str and arg1 == arg2:
                 return arg1
-            else:
-                return None
-        elif t2 == str:
+            return None
+        elif t2 is str:
             return None
         else:
             if not issubclass(t1, RandRange):
@@ -115,11 +114,10 @@ class Args:
 
 
 class Op:
-
     def __init__(self, *args, **kwargs):
-        perChildArgs = kwargs.get('perChildArgs', ())
+        perChildArgs = kwargs.get("perChildArgs", ())
         self.args = Args(args, perChildArgs)
-        self.childOps = kwargs.get('childOps', None)
+        self.childOps = kwargs.get("childOps")
         self.ruleLabel = None
 
     def addParams(self, paramNames):
@@ -129,7 +127,7 @@ class Op:
         return f"{self.__class__.__name__}@{hex(id(self))}"
 
     def __str__(self):
-        return(self.toString(0))
+        return self.toString(0)
 
     def toString(self, indent):
         spaces = "  " * indent
@@ -140,7 +138,7 @@ class Op:
             if indent > 50:
                 s += "...\n"
             newIndent = indent + 1
-            s += "\n".join([c.toString(newIndent) if type(c) != str else c for c in self.childOps])
+            s += "\n".join([c.toString(newIndent) if not isinstance(c, str) else c for c in self.childOps])
         return s
 
     def toStringWithIDs(self):
@@ -152,7 +150,7 @@ class Op:
         if self.childOps and len(self.childOps) > 0:
             s += "\n"
             newIndent = indent + 1
-            s += "\n".join([c._toStringWithIDs(newIndent) if type(c) != str else c for c in self.childOps])
+            s += "\n".join([c._toStringWithIDs(newIndent) if not isinstance(c, str) else c for c in self.childOps])
         return s
 
     def run(self, context, scope, env):
@@ -180,11 +178,11 @@ class Op:
             return self
 
     def combineWith(self, other):
-        return OpChooseRuleWithPriority(perChildArgs=((0.5,0.5), (True, True)), childOps=[self,other]).simplify({})
+        return OpChooseRuleWithPriority(perChildArgs=((0.5, 0.5), (True, True)), childOps=[self, other]).simplify({})
 
     def augmentArgs(self, other):
         comboArgs = self.args.combineWith(other.args)
-        if comboArgs == None:
+        if comboArgs is None:
             raise RuntimeError(f"Failed to combine op:\n{self}\nwith op:\n{other}")
         else:
             self.args = comboArgs
@@ -213,7 +211,7 @@ class Op:
     @staticmethod
     def combineMany(ops):
         n = len(ops)
-        return OpChooseRuleWithPriority(perChildArgs=((1/n,)*n, (True,)*n), childOps=ops).simplify({},True)
+        return OpChooseRuleWithPriority(perChildArgs=((1 / n,) * n, (True,) * n), childOps=ops).simplify({}, True)
 
     def toGrammarText(self):
         MAX_RULES = 10000
@@ -233,7 +231,7 @@ class Op:
         # We add child args to this if needed
         ruleText = f"{label} --> {self.opName}{self.args.formatForGrammar()}"
         childText = ""
-        if self.childOps != None:
+        if self.childOps is not None:
             childArgs = []
             if len(self.args.perChildArgs) == 0:
                 for c in self.childOps:
@@ -241,7 +239,7 @@ class Op:
                     childArgs.append(childLabel)
                     childText += cText
             else:
-                for arg, c in zip(self.args.perChildArgs, self.childOps):
+                for arg, c in zip(self.args.perChildArgs, self.childOps, strict=False):
                     childLabel, cText = c._toGrammarText(ruleNum)
                     childArgs.append(f"{arg} : {childLabel}")
                     childText += cText
@@ -252,13 +250,12 @@ class Op:
 
 # Split context in given direction into given size sections
 class OpSplit(Op):
-
-    opName = 'split'
+    opName = "split"
 
     def run(self, context, scope, env):
         axis, sizes = self.args.evaluate(env)
         childScopes = scope.split(axis, sizes)
-        for childOp, childScope in zip(self.childOps, childScopes):
+        for childOp, childScope in zip(self.childOps, childScopes, strict=False):
             childOp.run(context, childScope, env)
 
     def simplify(self, seenOps, combArgs=False):
@@ -266,18 +263,16 @@ class OpSplit(Op):
         sizes = newMe.args[1]
         newChildOps = []
         newSizes = []
-        i = 0
-        for child in newMe.childOps:
-            if type(child) == OpSplit and child.args[0] == newMe.args[0]:
+        for i, child in enumerate(newMe.childOps):
+            if type(child) is OpSplit and child.args[0] == newMe.args[0]:
                 # Can flatten this child
                 newChildOps.extend(child.childOps)
                 sumChildSizes = sum([s.size for s in child.args[1] if s.isRelative])
                 mult = sizes[i]
-                newSizes.extend([Size(s.size*mult/sumChildSizes, True) if s.isRelative else s for s in child.sizes])
+                newSizes.extend([Size(s.size * mult / sumChildSizes, True) if s.isRelative else s for s in child.sizes])
             else:
                 newChildOps.append(child)
                 newSizes.append(sizes[i])
-            i += 1
         newNewMe = OpSplit(self.args[0], perChildArgs=tuple(newSizes), childOps=newChildOps)
         return Op.simplify(newNewMe, seenOps, combArgs)
 
@@ -286,13 +281,14 @@ class OpSplit(Op):
     def argsToHash(self):
         return [self.__class__.__name__, self.args[0], len(self.args[1])]
 
+
 # Split the scope into uniform scopes and repeat an operation on each new scope
 class OpRepeat(Op):
-
-    opName = 'repeat'
+    opName = "repeat"
 
     def run(self, context, scope, env):
-        axis, size = self.args.evaluate(env)
+        axis, _sizes = self.args.evaluate(env)
+        size = _sizes[0]
         # There is really just one child op
         childOp = self.childOps[0]
         childScopes = scope.repeat(axis, size)
@@ -305,10 +301,10 @@ class OpRepeat(Op):
     def argsToHash(self):
         return [self.__class__.__name__, self.args[0]]
 
+
 # Split the scope into uniform scopes and repeat an operation on each new scope
 class OpRepeatN(Op):
-
-    opName = 'repeatN'
+    opName = "repeatN"
 
     def run(self, context, scope, env):
         axis, n = self.args.evaluate(env)
@@ -324,34 +320,34 @@ class OpRepeatN(Op):
     def argsToHash(self):
         return [self.__class__.__name__, self.args[0]]
 
+
 # Split the scope into components (e.g. faces) and apply rules to each
 class OpComp(Op):
-
-    opName = 'comp'
+    opName = "comp"
 
     def run(self, context, scope, env):
         faces = self.args[0]
         childScopes = [scope.comp(face) for face in faces]
-        for childOp, childScope in zip(self.childOps, childScopes):
+        for childOp, childScope in zip(self.childOps, childScopes, strict=False):
             childOp.run(context, childScope, env)
+
 
 # Colour current context
 class OpColour(Op):
-
-    opName = 'colour'
+    opName = "colour"
 
     def run(self, context, scope, env):
         col = self.args.evaluate(env)
         context.colour(col, scope)
 
+
 # Given a list of rules, choose one at random according to their priorirties
 class OpChooseRuleWithPriority(Op):
-
     def chooseChild(self, env):
         priorities, conditions = self.args.evaluate(env)[0]
         # remove children whose conditions fail
         # remember the index of the valid children in the original list though
-        filteredPriorities = [(i,p) for i,p in enumerate(priorities) if conditions[i]]
+        filteredPriorities = [(i, p) for i, p in enumerate(priorities) if conditions[i]]
         # Pick a random number less than the max cumulative priority
         rand = random() * sum(x[1] for x in filteredPriorities)
         i = 0
@@ -371,33 +367,51 @@ class OpChooseRuleWithPriority(Op):
     def simplify(self, seenOps, combArgs=False):
         priorities, conditions = self.args[0]
         seenChildren = defaultdict(float)
+        seenConditions = {}
         for i in range(len(self.childOps)):
             child = self.childOps[i].simplify(seenOps, combArgs)
-            # flatten child choices
-            if type(child) == OpChooseRuleWithPriority:
+            if type(child) is OpChooseRuleWithPriority:
                 for j in range(len(child.childOps)):
                     c = child.childOps[j]
-                    seenChildren[c.hash] += child.args[0][i] * priorities[i]
+                    weight = child.args[0][i] * priorities[i]
+                    seenChildren[c.hash] += weight
+                    childCond = child.args[0][1][j]
+                    if c.hash in seenConditions:
+                        seenConditions[c.hash] = (
+                            seenConditions[c.hash] & childCond if childCond is not True else seenConditions[c.hash]
+                        )
+                    else:
+                        seenConditions[c.hash] = childCond
             else:
                 seenChildren[child.hash] += priorities[i]
+                if child.hash in seenConditions:
+                    seenConditions[child.hash] = (
+                        seenConditions[child.hash] & conditions[i]
+                        if conditions[i] is not True
+                        else seenConditions[child.hash]
+                    )
+                else:
+                    seenConditions[child.hash] = conditions[i]
 
         newChildOps = []
-        priorities = []
-        # TODO: Need to sort out conditions too
-        childHashes = seenChildren.keys()
+        newPriorities = []
+        newConditions = []
+        childHashes = []
         for opHash, priority in seenChildren.items():
             newChildOps.append(seenOps[opHash])
-            priorities.append(priority)
-        # If we only have one child then we are always going to choose it
-        # so just return that operation and get rid of this choose op
-        if (len(newChildOps) == 1):
+            newPriorities.append(priority)
+            newConditions.append(seenConditions[opHash])
+            childHashes.append(opHash)
+
+        if len(newChildOps) == 1:
             return newChildOps[0]
-        priorities = tuple(priorities)
-        newOp = OpChooseRuleWithPriority(perChildArgs=(priorities, (True,)*len(priorities)), childOps=newChildOps)
+        newPriorities = tuple(newPriorities)
+        newConditions = tuple(newConditions)
+        newOp = OpChooseRuleWithPriority(perChildArgs=(newPriorities, newConditions), childOps=newChildOps)
         if combArgs:
-            ident = ('OpChooseRuleWithPriority', *childHashes)
+            ident = ("OpChooseRuleWithPriority", *childHashes)
         else:
-            ident = ('OpChooseRuleWithPriority', priorities, *childHashes)
+            ident = ("OpChooseRuleWithPriority", newPriorities, *childHashes)
         myHash = hash(ident)
 
         if myHash in seenOps:
@@ -418,25 +432,34 @@ class OpChooseRuleWithPriority(Op):
         self.ruleLabel = label
         childText = ""
         text = ""
-        for c, p in zip(self.childOps, self.args[0][0]):
+        for c, p in zip(self.childOps, self.args[0][0], strict=False):
             childLabel, cText = c._toGrammarText(ruleNum)
             text += f"{label} --> {childLabel} : %.5f\n" % p
             childText += cText
         return label, text + childText
 
-# Set the size of the current scope
-class OpResizeScope(Op):
 
-    opName = 'S'
+# Scale the current scope
+class OpResizeScope(Op):
+    opName = "S"
 
     def run(self, context, scope, env):
         v = self.args.evaluate(env)
         self.childOps[0].run(context, scope.resize(v), env)
 
+
+# Scale the current scope by factor(s)
+class OpScale(Op):
+    opName = "scale"
+
+    def run(self, context, scope, env):
+        v = self.args.evaluate(env)
+        self.childOps[0].run(context, scope.scale(v), env)
+
+
 # Translate the current object
 class OpTranslate(Op):
-
-    opName = 'T'
+    opName = "T"
 
     def run(self, context, scope, env):
         v = self.args.evaluate(env)
@@ -445,17 +468,16 @@ class OpTranslate(Op):
 
 # Rotate the current object
 class OpRotate(Op):
-
-    opName = 'R'
+    opName = "R"
 
     def run(self, context, scope, env):
         axis, angle = self.args.evaluate(env)
         self.childOps[0].run(context, scope.rotate(axis, angle), env)
 
+
 # Put a primitive in the current scope
 class OpPrimitive(Op):
-
-    opName = 'I'
+    opName = "I"
 
     def run(self, context, scope, env):
         prim = self.args[0]
@@ -467,19 +489,19 @@ class OpPrimitive(Op):
     def _toGrammarText(self, ruleNum):
         return f"I({self.args[0]})", ""
 
+
 # Very simple parent op that just runs its child
 class OpDo(Op):
-
     def run(self, context, scope, env):
         self.childOps[0].run(context, scope, env)
 
     def _toGrammarText(self, ruleNum):
         return self.childOps[0]._toGrammarText(ruleNum)
 
+
 # Nil op does nothing
 class OpNil(Op):
-
-    opName = 'nil'
+    opName = "nil"
 
     # Run on a scope, just leave that scope blank and do nothing
     def run(self, context, scope, env):
@@ -488,14 +510,14 @@ class OpNil(Op):
     def _toGrammarText(self, ruleNum):
         return "nil", ""
 
+
 # Sets the values of parameters in the environment
 class OpSetParams(Op):
-
     def exampleTree(self, env):
         paramVals = self.args.evaluate(env)
         child = self.childOps[0]
         envNew = env.copy()
-        envNew.update(zip(child.paramNames, paramVals))
+        envNew.update(zip(child.paramNames, paramVals, strict=False))
         return OpSetParams(paramVals, childOps=[child.exampleTree(envNew)])
 
     def run(self, context, scope, env):
@@ -506,6 +528,5 @@ class OpSetParams(Op):
         child = self.childOps[0]
         # Update the environment with the param values
         envNew = env.copy()
-        envNew.update(zip(child.paramNames, paramVals))
+        envNew.update(zip(child.paramNames, paramVals, strict=False))
         child.run(context, scope, envNew)
-

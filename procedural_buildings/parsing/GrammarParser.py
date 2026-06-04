@@ -1,19 +1,17 @@
-from .ParserAbstract import ParserAbstract
+from .Checker import Checker
 from .Lexer import Lexer
 from .Parser import Parser
-from .Checker import Checker
+from .ParserAbstract import ParserAbstract
 
 
 class GrammarParser(ParserAbstract):
-
     def parse(self, grammar):
         lexer = Lexer()
         parser = Parser()
         checker = Checker()
-        return(
-            checker.check(
-                parser.parse(
-                    lexer.tokenize(grammar)
-                )
-            )
-        )
+        if not grammar.endswith("\n"):
+            grammar += "\n"
+        import re
+
+        grammar = re.sub(r"^\d+:\s*", "", grammar, flags=re.MULTILINE)
+        return checker.check(parser.parse(lexer.tokenize(grammar)))

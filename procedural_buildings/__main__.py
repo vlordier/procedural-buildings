@@ -1,11 +1,16 @@
-import sys, getopt
-from .Processor import Processor
+import getopt
+import sys
 from os import getcwd
-from .Scope import Scope
+from os import sep as path_sep
+
 import numpy as np
 
+from .Processor import Processor
+from .Scope import Scope
+
 DEFAULT_SEP = 10
-DEFAULT_SCOPE_SIZE = [10,10,10]
+DEFAULT_SCOPE_SIZE = [10, 10, 10]
+
 
 def main(argv):
     inFile = ""
@@ -14,17 +19,21 @@ def main(argv):
     n = 1
     sep = DEFAULT_SEP
     filePerObj = False
-    startRule = 'plot'
-    startScope = Scope.freshScope(np.array([0,0,0]),np.array(DEFAULT_SCOPE_SIZE))
-    usage = 'Usage:\nprocedural_buildings -i <input_file> -o <output_file> [-s | --start_scope <x_min,y_min,z_min,x_max,y_max,z_max>] [-R | --start_rule <start_rule>] [-r | --reverse] [-n <num_buildings>] [-d | --separation <separation_distance>] [-f | --file_per_obj]'
+    startRule = "plot"
+    startScope = Scope.freshScope(np.array([0, 0, 0]), np.array(DEFAULT_SCOPE_SIZE))
+    usage = "Usage:\nprocedural_buildings -i <input_file> -o <output_file> [-s | --start_scope <x_min,y_min,z_min,x_max,y_max,z_max>] [-R | --start_rule <start_rule>] [-r | --reverse] [-n <num_buildings>] [-d | --separation <separation_distance>] [-f | --file_per_obj]"
     try:
-        opts, args = getopt.getopt(argv,"hi:o:s:R:rn:d:f",["ifile=","ofile=","start_scope=","start_rule=","reverse","separation=","file_per_obj"])
+        opts, args = getopt.getopt(
+            argv,
+            "hi:o:s:R:rn:d:f",
+            ["ifile=", "ofile=", "start_scope=", "start_rule=", "reverse", "separation=", "file_per_obj"],
+        )
     except getopt.GetoptError:
         print("Option error")
         print(usage)
         sys.exit(2)
     for opt, arg in opts:
-        if opt == '-h':
+        if opt == "-h":
             print(usage)
             sys.exit()
         elif opt in ("-i", "--ifile"):
@@ -34,9 +43,9 @@ def main(argv):
         elif opt in ("-s", "--start_scope"):
             try:
                 coords = [int(coord) for coord in arg.split(",")]
-                assert(len(coords) == 6)
-                startScope = Scope.freshScope(np.array(coords[:3]),np.array(coords[3:]))
-            except:
+                assert len(coords) == 6
+                startScope = Scope.freshScope(np.array(coords[:3]), np.array(coords[3:]))
+            except (ValueError, AssertionError):
                 print("Invalid scope argument.")
                 print(usage)
                 sys.exit()
@@ -47,16 +56,16 @@ def main(argv):
         elif opt == "-n":
             n = int(arg)
         elif opt in ("-d", "--separation"):
-            sep = int(arg)
+            sep = float(arg)
         elif opt in ("-f", "--file_per_obj"):
             filePerObj = True
-   
+
     if not inFile or not outFile:
         print("Please provide both an input and output file")
         print(usage)
         sys.exit()
     p = Processor()
-    p.grammarDir = getcwd() + "\\"
+    p.grammarDir = getcwd() + path_sep
     p.outputDir = p.grammarDir
     p.engineeredDir = p.grammarDir
     if rev:
@@ -67,14 +76,13 @@ def main(argv):
             with open(inFile) as f:
                 objFiles = f.read().splitlines()
         p.objsToGrammar(objFiles, outFile)
-        
+
     else:
         if filePerObj:
             p.grammarToManyObjFiles(inFile, startRule, startScope, n, outFile)
         else:
             p.grammarToManyObjs(inFile, startRule, startScope, n, sep, outFile)
 
+
 if __name__ == "__main__":
     main(sys.argv[1:])
-
-

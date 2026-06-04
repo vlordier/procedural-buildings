@@ -5,14 +5,16 @@ class Rule:
         self.op = right.op
         self.priority = right.priority
         self.condition = left.condition
-        if left.paramNames != None:
+        if left.paramNames is not None:
             self.op.addParams(left.paramNames)
+
 
 # Right side of a rule
 class Right:
     def __init__(self, op, priority=None):
         self.op = op
         self.priority = priority
+
 
 # Left side of a rule
 class Left:
@@ -30,12 +32,12 @@ class Size:
         self.isRelative = isRelative
 
     def valToString(self):
-        if type(self.size) == int:
+        if isinstance(self.size, int):
             return str(self.size)
         else:
             try:
-                return "%.5f" % self.size
-            except:
+                return f"{self.size:.5f}"
+            except (TypeError, ValueError):
                 return str(self.size)
 
     def __str__(self):
@@ -43,6 +45,7 @@ class Size:
             return f"~({self.valToString()})"
         else:
             return f"{self.valToString()}"
+
     def __repr__(self):
         if self.isRelative:
             return f"RelSize({self.size})"
@@ -51,4 +54,3 @@ class Size:
 
     def __hash__(self):
         return hash((self.size, self.isRelative))
-
