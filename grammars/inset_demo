@@ -1,0 +1,5 @@
+plot --> split(y){~1 : base | ~5 : floors | ~1 : roof}
+base --> I(rect)
+roof --> I(pediment)
+floors --> split(x){~1 : I(column) | ~4 : bay | ~1 : I(column) | ~4 : bay | ~1 : I(column)}
+bay --> inset(0.3){I(rect) | I(window3)}

@@ -1,0 +1,9 @@
+N = randint(3, 8)
+plot --> split(y){~1 : base | ~(N * 3) : floors(0) | ~1 : roof}
+floors(i) : i < N --> split(y){~3 : floor | ~0.5 : band | ~(N * 3) : floors(i + 1)}
+floors(i) : i >= N --> split(y){~3 : floor}
+floor --> split(x){~1 : I(column) | ~4 : bay | ~1 : I(column) | ~4 : bay | ~1 : I(column)}
+bay --> inset(0.3){I(rect) | I(window3)}
+band --> I(rect)
+base --> I(rect)
+roof --> I(pediment)

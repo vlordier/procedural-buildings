@@ -1,0 +1,1 @@
+plot --> inset(0.3){I(rect) | inset(0.2){I(rect) | I(rect)}}
