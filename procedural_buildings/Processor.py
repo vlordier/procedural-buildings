@@ -1,19 +1,21 @@
 from os import makedirs
 from os.path import exists
-from os.path import sep as path_sep
+from os import sep as path_sep
 from time import time
 
+import gin
 import numpy as np
 
 from .ContextObj import ContextOBJ
 from .ObjReader import objsToOpGraph, objToOpGraph
 from .Ops import OpNil, OpRepeat, OpSplit
-from .parsing.GrammarParser import GrammarParser
-from .parsing.Rule import Size
 from .RandomOpGraph import genRandOpGraph
 from .Scope import Scope
+from .parsing.GrammarParser import GrammarParser
+from .parsing.Rule import Size
 
 
+@gin.configurable
 class Processor:
     grammarDir = "../grammars/" + path_sep
     outDir = "outputs/" + path_sep

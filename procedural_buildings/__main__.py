@@ -3,6 +3,7 @@ import sys
 from os import getcwd
 from os import sep as path_sep
 
+import gin
 import numpy as np
 
 from .Processor import Processor
@@ -21,12 +22,25 @@ def main(argv):
     filePerObj = False
     startRule = "plot"
     startScope = Scope.freshScope(np.array([0, 0, 0]), np.array(DEFAULT_SCOPE_SIZE))
-    usage = "Usage:\nprocedural_buildings -i <input_file> -o <output_file> [-s | --start_scope <x_min,y_min,z_min,x_max,y_max,z_max>] [-R | --start_rule <start_rule>] [-r | --reverse] [-n <num_buildings>] [-d | --separation <separation_distance>] [-f | --file_per_obj]"
+    ginFiles = []
+    ginParams = []
+    usage = (
+        "Usage:\nprocedural_buildings -i <input_file> -o <output_file>"
+        " [-s | --start_scope <x_min,y_min,z_min,x_max,y_max,z_max>]"
+        " [-R | --start_rule <start_rule>] [-r | --reverse]"
+        " [-n <num_buildings>] [-d | --separation <separation_distance>]"
+        " [-f | --file_per_obj] [-g | --gin_file <config.gin>]"
+        " [-p | --gin_param <bindings>]"
+    )
     try:
         opts, _args = getopt.getopt(
             argv,
-            "hi:o:s:R:rn:d:f",
-            ["ifile=", "ofile=", "start_scope=", "start_rule=", "reverse", "separation=", "file_per_obj"],
+            "hi:o:s:R:rn:d:fg:p:",
+            [
+                "ifile=", "ofile=", "start_scope=", "start_rule=",
+                "reverse", "separation=", "file_per_obj",
+                "gin_file=", "gin_param=",
+            ],
         )
     except getopt.GetoptError:
         print("Option error")
@@ -59,24 +73,29 @@ def main(argv):
             sep = float(arg)
         elif opt in ("-f", "--file_per_obj"):
             filePerObj = True
+        elif opt in ("-g", "--gin_file"):
+            ginFiles.append(arg)
+        elif opt in ("-p", "--gin_param"):
+            ginParams.append(arg)
 
     if not inFile or not outFile:
         print("Please provide both an input and output file")
         print(usage)
         sys.exit()
+
+    gin.parse_config_files_and_bindings(ginFiles, ginParams)
+
     p = Processor()
     p.grammarDir = getcwd() + path_sep
     p.outputDir = p.grammarDir
     p.engineeredDir = p.grammarDir
     if rev:
-        # Check if provided an object file or a file with list of filenames
         if inFile.split(".")[-1] == "obj":
             objFiles = [inFile]
         else:
             with open(inFile) as f:
                 objFiles = f.read().splitlines()
         p.objsToGrammar(objFiles, outFile)
-
     else:
         if filePerObj:
             p.grammarToManyObjFiles(inFile, startRule, startScope, n, outFile)

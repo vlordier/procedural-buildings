@@ -19,6 +19,7 @@ from ..Ops import (
     OpTranslate,
 )
 from ..RandRange import RandIntRange, RandRange
+from .GrammarVars import get_grammar_var
 from .Lexer import Lexer
 from .Rule import Left, Right, Rule, Size
 
@@ -260,7 +261,10 @@ class Parser(SlyParser):
 
     @_("IDENT ASSIGN expr")
     def decl(self, p):
-        if isinstance(p.expr, (RandRange, RandIntRange)):
+        override = get_grammar_var(p.IDENT, None)
+        if override is not None:
+            self.vars[p.IDENT] = override
+        elif isinstance(p.expr, (RandRange, RandIntRange)):
             self.vars[p.IDENT] = p.expr.evaluate()
         else:
             self.vars[p.IDENT] = p.expr

@@ -1,0 +1,5 @@
+# Procedural Buildings — gin config
+# Override grammar variables and processor settings.
+
+# Fixed number of floors: override N = randint(3,8) -> N = 5
+grammar_var_overrides.values = {"N": 5}

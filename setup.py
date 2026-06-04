@@ -25,5 +25,6 @@ setuptools.setup(
         "numpy",
         "sympy",
         "sly",
+        "gin-config",
     ],
 )
