@@ -1,4 +1,5 @@
 import getopt
+import logging
 import sys
 from os import getcwd
 from os import sep as path_sep
@@ -7,8 +8,11 @@ import gin
 import numpy as np
 
 from ._constants import DEFAULT_SCOPE_SIZE, DEFAULT_SEPARATION, NUM_SCOPE_COORDS
+from ._logging import get_logger, setup_logging
 from .Processor import Processor
 from .Scope import Scope
+
+log = get_logger(__name__)
 
 
 def main(argv):
@@ -22,18 +26,19 @@ def main(argv):
     startScope = Scope.freshScope(np.array([0, 0, 0]), np.array(DEFAULT_SCOPE_SIZE))
     ginFiles = []
     ginParams = []
+    verbose = False
     usage = (
         "Usage:\nprocedural_buildings -i <input_file> -o <output_file>"
         " [-s | --start_scope <x_min,y_min,z_min,x_max,y_max,z_max>]"
         " [-R | --start_rule <start_rule>] [-r | --reverse]"
         " [-n <num_buildings>] [-d | --separation <separation_distance>]"
         " [-f | --file_per_obj] [-g | --gin_file <config.gin>]"
-        " [-p | --gin_param <bindings>]"
+        " [-p | --gin_param <bindings>] [-v | --verbose]"
     )
     try:
         opts, _args = getopt.getopt(
             argv,
-            "hi:o:s:R:rn:d:fg:p:",
+            "hi:o:s:R:rn:d:fg:p:v",
             [
                 "ifile=",
                 "ofile=",
@@ -44,10 +49,11 @@ def main(argv):
                 "file_per_obj",
                 "gin_file=",
                 "gin_param=",
+                "verbose",
             ],
         )
     except getopt.GetoptError:
-        print("Option error")
+        log.error("Option error")
         print(usage)
         sys.exit(2)
     for opt, arg in opts:
@@ -64,7 +70,7 @@ def main(argv):
                 assert len(coords) == NUM_SCOPE_COORDS
                 startScope = Scope.freshScope(np.array(coords[:3]), np.array(coords[3:]))
             except (ValueError, AssertionError):
-                print("Invalid scope argument.")
+                log.error("Invalid scope argument.")
                 print(usage)
                 sys.exit()
         elif opt in ("-R", "--start_rule"):
@@ -75,10 +81,10 @@ def main(argv):
             try:
                 n = int(arg)
                 if n < 1:
-                    print("Error: -n must be a positive integer")
+                    log.error("Error: -n must be a positive integer")
                     sys.exit(2)
             except ValueError:
-                print("Error: -n must be a positive integer")
+                log.error("Error: -n must be a positive integer")
                 sys.exit(2)
         elif opt in ("-d", "--separation"):
             try:
@@ -86,7 +92,7 @@ def main(argv):
                 if sep < 0:
                     sep = 0
             except ValueError:
-                print("Error: -d must be a number")
+                log.error("Error: -d must be a number")
                 sys.exit(2)
         elif opt in ("-f", "--file_per_obj"):
             filePerObj = True
@@ -94,9 +100,14 @@ def main(argv):
             ginFiles.append(arg)
         elif opt in ("-p", "--gin_param"):
             ginParams.append(arg)
+        elif opt in ("-v", "--verbose"):
+            verbose = True
+
+    if verbose:
+        setup_logging(logging.DEBUG)
 
     if not inFile or not outFile:
-        print("Please provide both an input and output file")
+        log.error("Please provide both an input and output file")
         print(usage)
         sys.exit()
 

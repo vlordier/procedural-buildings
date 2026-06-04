@@ -7,6 +7,7 @@ import gin
 import numpy as np
 
 from ._constants import NUM_PRIMS_SCALE_FACTOR, SPEEDTEST_REPEATS, SPEEDTEST_SCOPE_SIZE
+from ._logging import get_logger
 from .ContextObj import ContextOBJ
 from .ObjReader import objsToOpGraph, objToOpGraph
 from .Ops import OpNil, OpRepeat, OpSplit
@@ -14,6 +15,8 @@ from .parsing.GrammarParser import GrammarParser
 from .parsing.Rule import Size
 from .RandomOpGraph import genRandOpGraph
 from .Scope import Scope
+
+log = get_logger(__name__)
 
 
 @gin.configurable
@@ -29,9 +32,9 @@ class Processor:
         if context is None:
             context = ContextOBJ()
         context.reset()
-        print("Running op graph to create obj")
+        log.info("Running op graph to create obj")
         opGraph.run(context, startScope, {})
-        print("Writing obj to file")
+        log.info("Writing obj to file")
         context.writeToFile(outFile)
 
     # Given an op graph, run it some number of times and write the resulting buildings to the same file
@@ -53,7 +56,7 @@ class Processor:
 
     # Given a grammar file and start rule, return the operation graph corresponding to that grammar
     def grammarFileToOpGraph(self, grammarName, startRule):
-        print("Creating operation graph from grammar...")
+        log.info("Creating operation graph from grammar...")
         with open(self.grammarDir + grammarName) as f:
             grammarText = f.read()
         parser = GrammarParser()
@@ -74,7 +77,7 @@ class Processor:
         opGraph = self.grammarFileToOpGraph(grammarName, startRule)
         fileNames = []
         for i in range(n):
-            print(f"Generating obj file {i + 1}/{n}")
+            log.info(f"Generating obj file {i + 1}/{n}")
             fname = f"{filePrefix}{i}.{self.fileExt}"
             self.opGraphToObj(opGraph, startScope, fname)
             fileNames.append(fname)
@@ -87,21 +90,21 @@ class Processor:
 
     # Given a set of example object files, return an operation graph representing the examples
     def objsToOpGraph(self, objFiles):
-        print("Generating operation graph from objects")
+        log.info("Generating operation graph from objects")
         return objsToOpGraph(objFiles)
 
     # Given a set of example object files, construct a grammar representing the examples
     def objsToGrammar(self, objFiles, grammarFile):
         opGraph, _prims = self.objsToOpGraph(objFiles)
-        print("Creating grammar from op graph")
+        log.info("Creating grammar from op graph")
         grammarText = opGraph.toGrammarText()
-        print("Writing grammar to file")
+        log.info("Writing grammar to file")
         engineeredPath = self.engineeredDir.rstrip(path_sep)
         if not exists(engineeredPath):
             makedirs(engineeredPath)
         with open(f"{self.engineeredDir}{grammarFile}", "w") as f:
             f.write(grammarText)
-        print("Done")
+        log.info("Done")
 
     # Given a set of example object files, write a new set of inferred buildings to a single output file
     def objsToObjs(self, objFiles, scope, n, gap, outFile):
@@ -121,7 +124,7 @@ class Processor:
                 maxPrims = branch**depth
                 numPrims = 1
                 while numPrims < maxPrims:
-                    print(depth, branch, numPrims)
+                    log.debug(f"speedTest: depth={depth} branch={branch} numPrims={numPrims}")
                     runs = ([], [])
                     for _i in range(repeats):
                         # Create a random operation graph with the given args
@@ -140,6 +143,6 @@ class Processor:
                     results.append([depth, branch, numPrims, round(opToObj, 3), round(objToOp, 3)])
                     numPrims *= NUM_PRIMS_SCALE_FACTOR
 
-        print("max depth\tmax branch\tnum prims\top-to-obj time\tobj-to-op time")
+        log.info("max depth\tmax branch\tnum prims\top-to-obj time\tobj-to-op time")
         for r in results:
-            print("\t\t".join(str(x) for x in r))
+            log.info("\t\t".join(str(x) for x in r))

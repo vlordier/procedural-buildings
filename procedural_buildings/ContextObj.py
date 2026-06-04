@@ -1,5 +1,8 @@
 from ._constants import COLOUR_FMT_PRECISION
+from ._logging import get_logger
 from .Primitive import basicPrims
+
+log = get_logger(__name__)
 
 
 class ContextOBJ:
@@ -14,11 +17,11 @@ class ContextOBJ:
     # The position, size and orientation of the primitive depends on scope
     def addPrim(self, primName, scope):
         if primName not in self.prims:
-            print(f"Failed to find prim with name: {primName}")
-            print(f"Available prims:\n{self.prims.keys()}")
+            log.warning(f"Failed to find prim with name: {primName}")
+            log.warning(f"Available prims: {list(self.prims.keys())}")
             if "rect" not in self.prims:
                 raise KeyError(f"No fallback primitive 'rect' available. Primitives found: {list(self.prims.keys())}")
-            print("Just going to use a box")
+            log.warning("Falling back to rect primitive")
             prim = self.prims["rect"]
         else:
             prim = self.prims[primName]
@@ -46,7 +49,7 @@ class ContextOBJ:
             with open(fname, "w") as f:
                 f.writelines(self.objFileText)
         except OSError:
-            print(f"Failed to write to .obj file: {fname}")
+            log.error(f"Failed to write to .obj file: {fname}")
 
     # The faces in a .obj file reference the vertex indices in a file
     # We need to offset these indices since other primitive shapes may

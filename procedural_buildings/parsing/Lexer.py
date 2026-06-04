@@ -1,6 +1,10 @@
 # ruff: noqa: F821
 from sly import Lexer as SlyLexer
 
+from .._logging import get_logger
+
+log = get_logger(__name__)
+
 
 class Lexer(SlyLexer):
     tokens = {
@@ -119,5 +123,5 @@ class Lexer(SlyLexer):
         return t
 
     def error(self, t):
-        print(f"Illegal character '{t.value[0]}'")
+        log.warning(f"Illegal character '{t.value[0]}'")
         self.index += 1

@@ -3,11 +3,15 @@ from itertools import cycle
 import numpy as np
 
 from ._constants import MAX_CONSECUTIVE_FAILURES, NUM_AXES
+
+# Represents a bounding box for a primitive object
+from ._logging import get_logger
 from .Ops import OpNil, OpPrimitive, OpSplit
 from .parsing.Rule import Size
 
+log = get_logger(__name__)
 
-# Represents a bounding box for a primitive object
+
 class Box:
     def __init__(self, bounds, prim):
         self.boundVals = [[low, high] for low, high in bounds]
@@ -222,9 +226,9 @@ def boxesToOp(boxes, initialContainer):
             consecutiveFailCount += 1
 
     if consecutiveFailCount == MAX_CONSECUTIVE_FAILURES and not allPrimitiveContainers:
-        print([b.bounds for b in boxes])
-        print([b.container for b in boxes])
-        print([b.container.bounds for b in boxes])
+        log.debug(f"boxes: {[b.bounds for b in boxes]}")
+        log.debug(f"containers: {[b.container for b in boxes]}")
+        log.debug(f"container bounds: {[b.container.bounds for b in boxes]}")
         raise RuntimeError("Failed to split boxes")
 
     return initialContainer.toOp()
@@ -236,5 +240,3 @@ def boxesToOp(boxes, initialContainer):
 # for box in boxes:
 #    initialContainer.addBox(box)
 # initialContainer.setBounds([[0,23],[0,6],[0,12]])
-
-# print(boxesToOp(boxes, initialContainer))
