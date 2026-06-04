@@ -6,6 +6,7 @@ from sympy import Eq, Ne, symbols
 from ..Ops import (
     OpColour,
     OpComp,
+    OpInset,
     OpNil,
     OpPrimitive,
     OpRepeat,
@@ -170,6 +171,10 @@ class Parser(SlyParser):
     @_("NIL")
     def singleOp(self, p):
         return OpNil()
+
+    @_("INSET LPAR expr RPAR LCURL singleOp BAR singleOp RCURL")
+    def singleOp(self, p):
+        return OpInset(p.expr, childOps=[p.singleOp0, p.singleOp1])
 
     @_("LPAR expr COMMA expr COMMA expr RPAR")
     def col(self, p):
