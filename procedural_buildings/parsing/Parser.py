@@ -1,56 +1,70 @@
-from sly import Parser as SlyParser
-from .Rule import Rule, Right, Left, Size
-from .Lexer import Lexer
-from ..Ops import *
-from sympy import symbols, Eq, Ne
+# ruff: noqa: F821, F811, F405
 from numpy import pi
-from ..RandRange import RandRange, RandIntRange
+from sly import Parser as SlyParser
+from sympy import Eq, Ne, symbols
+
+from ..Ops import (
+    OpColour,
+    OpComp,
+    OpNil,
+    OpPrimitive,
+    OpRepeat,
+    OpRepeatN,
+    OpResizeScope,
+    OpRotate,
+    OpScale,
+    OpSetParams,
+    OpSplit,
+    OpTranslate,
+)
+from ..RandRange import RandIntRange, RandRange
+from .Lexer import Lexer
+from .Rule import Left, Right, Rule, Size
 
 
 class Parser(SlyParser):
-
     tokens = Lexer.tokens
 
     precedence = (
-        ('nonassoc', NEQ, EQ, LT, GT, LTE, GTE),
-        ('left', PLUS, MINUS),
-        ('left', TIMES, DIVIDE),
-        ('right', UMINUS),
-        )
+        ("nonassoc", NEQ, EQ, LT, GT, LTE, GTE),
+        ("left", PLUS, MINUS),
+        ("left", TIMES, DIVIDE),
+        ("right", UMINUS),
+    )
 
     colourNames = {
-        'red':   (1,0,0),
-        'green': (0,1,0),
-        'blue':  (0,0,1),
+        "red": (1, 0, 0),
+        "green": (0, 1, 0),
+        "blue": (0, 0, 1),
     }
 
     def __init__(self):
         self.vars = {}
-        self.ruleFromLabel = { }
-        self.axes = {'x': 0, 'y': 1, 'z': 2}
+        self.ruleFromLabel = {}
+        self.axes = {"x": 0, "y": 1, "z": 2}
 
     def parse(self, grammar):
-        super(Parser, self).parse(grammar)
+        super().parse(grammar)
         return self.ruleFromLabel
 
-    @_('decls NEWLINE rules')
+    @_("decls NEWLINE rules")
     def grammar(self, p):
         return
 
-    @_('rules')
+    @_("rules")
     def grammar(self, p):
         return
 
-    @_('rules rule')
+    @_("rules rule")
     def rules(self, p):
         p.rules.append(p.rule)
         return p.rules
 
-    @_('rule')
+    @_("rule")
     def rules(self, p):
         return [p.rule]
 
-    @_('left ARROW right NEWLINE')
+    @_("left ARROW right NEWLINE")
     def rule(self, p):
         newRule = Rule(p.left, p.right)
         if newRule.label in self.ruleFromLabel:
@@ -59,272 +73,278 @@ class Parser(SlyParser):
             self.ruleFromLabel[newRule.label] = [newRule]
         return newRule
 
-    @_('ruleName')
+    @_("ruleName")
     def left(self, p):
         return Left(*p.ruleName)
 
-    @_('ruleName COLON expr')
+    @_("ruleName COLON expr")
     def left(self, p):
         return Left(*p.ruleName, condition=p.expr)
 
-    @_('label')
+    @_("label")
     def ruleName(self, p):
         return (p.label,)
 
-    @_('label LPAR paramNames RPAR')
+    @_("label LPAR paramNames RPAR")
     def ruleName(self, p):
         return (p.label, tuple(p.paramNames))
 
-    @_('IDENT')
+    @_("IDENT")
     def paramNames(self, p):
         return [p.IDENT]
 
-    @_('paramNames COMMA IDENT')
+    @_("paramNames COMMA IDENT")
     def paramNames(self, p):
         p.paramNames.append(p.IDENT)
         return p.paramNames
 
-    @_('IDENT')
+    @_("IDENT")
     def label(self, p):
         return p.IDENT
 
-    @_('op COLON expr')
+    @_("op COLON expr")
     def right(self, p):
         return Right(p.op, p.expr)
 
-    @_('op')
+    @_("op")
     def right(self, p):
         return Right(p.op)
 
-    @_('singleOp')
+    @_("singleOp")
     def op(self, p):
         return p.singleOp
 
-    @_('label')
+    @_("label")
     def singleOp(self, p):
         return p.label
 
-    @_('label LPAR ruleParams RPAR')
+    @_("label LPAR ruleParams RPAR")
     def singleOp(self, p):
         return OpSetParams(*p.ruleParams, childOps=[p.label])
 
-    @_('SPLIT LPAR axis RPAR LCURL opParams RCURL')
+    @_("SPLIT LPAR axis RPAR LCURL opParams RCURL")
     def singleOp(self, p):
         return OpSplit(p.axis, perChildArgs=tuple(p.opParams[0]), childOps=p.opParams[1])
 
-    @_('REPEAT LPAR axis RPAR LCURL expr COLON op RCURL')
+    @_("REPEAT LPAR axis RPAR LCURL expr COLON op RCURL")
     def singleOp(self, p):
         return OpRepeat(p.axis, perChildArgs=(p.expr,), childOps=[p.op])
 
-    @_('REPEATN LPAR axis COMMA expr RPAR LCURL op RCURL')
+    @_("REPEATN LPAR axis COMMA expr RPAR LCURL op RCURL")
     def singleOp(self, p):
         return OpRepeatN(p.axis, p.expr, childOps=[p.op])
 
     # TODO: change to use more than just face
-    @_('COMP LPAR FACE RPAR LCURL compParams RCURL')
+    @_("COMP LPAR FACE RPAR LCURL compParams RCURL")
     def singleOp(self, p):
         return OpComp(perChildArgs=tuple(p.compParams[0]), childOps=p.compParams[1])
 
-    @_('COLOUR col')
+    @_("COLOUR col")
     def singleOp(self, p):
         return OpColour(*p.col)
 
-    @_('ROTATE LPAR axis COMMA expr RPAR LCURL singleOp RCURL')
+    @_("ROTATE LPAR axis COMMA expr RPAR LCURL singleOp RCURL")
     def singleOp(self, p):
         return OpRotate(p.axis, p.expr, childOps=[p.singleOp])
 
-    @_('RESIZESCOPE LPAR size COMMA size COMMA size RPAR LCURL singleOp RCURL')
+    @_("RESIZESCOPE LPAR size COMMA size COMMA size RPAR LCURL singleOp RCURL")
     def singleOp(self, p):
         return OpResizeScope(p.size0, p.size1, p.size2, childOps=[p.singleOp])
 
-    @_('TRANSLATE LPAR expr COMMA expr COMMA expr RPAR LCURL singleOp RCURL')
+    @_("TRANSLATE LPAR expr COMMA expr COMMA expr RPAR LCURL singleOp RCURL")
     def singleOp(self, p):
         return OpTranslate(p.expr0, p.expr1, p.expr2, childOps=[p.singleOp])
 
-    @_('PRIMITIVE LPAR IDENT RPAR')
+    @_("SCALE LPAR expr COMMA expr COMMA expr RPAR LCURL singleOp RCURL")
+    def singleOp(self, p):
+        return OpScale(p.expr0, p.expr1, p.expr2, childOps=[p.singleOp])
+
+    @_("SCALE LPAR expr RPAR LCURL singleOp RCURL")
+    def singleOp(self, p):
+        return OpScale(p.expr, childOps=[p.singleOp])
+
+    @_("PRIMITIVE LPAR IDENT RPAR")
     def singleOp(self, p):
         return OpPrimitive(p.IDENT)
 
-    @_('NIL')
+    @_("NIL")
     def singleOp(self, p):
         return OpNil()
 
-    @_('LPAR expr COMMA expr COMMA expr RPAR')
+    @_("LPAR expr COMMA expr COMMA expr RPAR")
     def col(self, p):
         return (p.expr0, p.expr1, p.expr2)
 
-    @_('LPAR IDENT RPAR')
+    @_("LPAR IDENT RPAR")
     def col(self, p):
         try:
             return self.colourNames[p.IDENT]
-        except LookupError:
-            raise RuntimeError(f'Unknown colour: {p.IDENT}')
+        except LookupError as e:
+            raise RuntimeError(f"Unknown colour: {p.IDENT}") from e
 
-    @_('size COLON op')
+    @_("size COLON op")
     def opParams(self, p):
-        return ([p.size],[p.op])
+        return ([p.size], [p.op])
 
-    @_('opParams BAR size COLON op')
+    @_("opParams BAR size COLON op")
     def opParams(self, p):
         p.opParams[0].append(p.size)
         p.opParams[1].append(p.op)
         return p.opParams
 
-    @_('FACENAME COLON op')
+    @_("FACENAME COLON op")
     def compParams(self, p):
-        return ([p.FACENAME],[p.op])
+        return ([p.FACENAME], [p.op])
 
-    @_('compParams BAR FACENAME COLON op')
+    @_("compParams BAR FACENAME COLON op")
     def compParams(self, p):
         p.compParams[0].append(p.FACENAME)
         p.compParams[1].append(p.op)
         return p.compParams
 
-    @_('expr')
+    @_("expr")
     def size(self, p):
         return Size(p.expr, False)
 
-    @_('TILDE number')
+    @_("TILDE number")
     def size(self, p):
         return Size(p.number, True)
 
-    @_('TILDE IDENT')
+    @_("TILDE IDENT")
     def size(self, p):
         try:
             return Size(self.vars[p.IDENT], True)
         except LookupError:
             return Size(symbols(p.IDENT), True)
 
-    @_('TILDE LPAR expr RPAR')
+    @_("TILDE LPAR expr RPAR")
     def size(self, p):
         return Size(p.expr, True)
 
-    @_('FLOAT')
+    @_("FLOAT")
     def number(self, p):
         return p.FLOAT
 
-    @_('INT')
+    @_("INT")
     def number(self, p):
         return p.INT
 
-    @_('RAND LPAR expr COMMA expr RPAR')
+    @_("RAND LPAR expr COMMA expr RPAR")
     def number(self, p):
         return RandRange(p.expr0, p.expr1)
 
-    @_('RANDINT LPAR expr COMMA expr RPAR')
+    @_("RANDINT LPAR expr COMMA expr RPAR")
     def number(self, p):
         return RandIntRange(p.expr0, p.expr1)
 
-    @_('PI')
+    @_("PI")
     def number(self, p):
         return pi
 
-    @_('decl')
+    @_("decl")
     def decls(self, p):
         return
 
-    @_('decls NEWLINE decl')
+    @_("decls NEWLINE decl")
     def decls(self, p):
         return
 
-    @_('IDENT ASSIGN expr')
+    @_("IDENT ASSIGN expr")
     def decl(self, p):
-        if type(p.expr) == RandRange or type(p.expr) == RandIntRange:
+        if isinstance(p.expr, (RandRange, RandIntRange)):
             self.vars[p.IDENT] = p.expr.evaluate()
         else:
             self.vars[p.IDENT] = p.expr
         return
 
-    @_('AXIS')
+    @_("AXIS")
     def expr(self, p):
         return self.axes[p.AXIS]
 
-    @_('IDENT')
+    @_("IDENT")
     def expr(self, p):
         try:
             return self.vars[p.IDENT]
         except LookupError:
             return symbols(p.IDENT)
 
-    @_('number')
+    @_("number")
     def expr(self, p):
         return p.number
 
-    @_('expr PLUS expr')
+    @_("expr PLUS expr")
     def expr(self, p):
         return p.expr0 + p.expr1
 
-    @_('expr MINUS expr')
+    @_("expr MINUS expr")
     def expr(self, p):
         return p.expr0 - p.expr1
 
-    @_('expr TIMES expr')
+    @_("expr TIMES expr")
     def expr(self, p):
         return p.expr0 * p.expr1
 
-    @_('expr DIVIDE expr')
+    @_("expr DIVIDE expr")
     def expr(self, p):
         return p.expr0 / p.expr1
 
-    @_('MINUS expr %prec UMINUS')
+    @_("MINUS expr %prec UMINUS")
     def expr(self, p):
         return -p.expr
 
-    @_('expr GT expr')
+    @_("expr GT expr")
     def expr(self, p):
         return p.expr0 > p.expr1
 
-    @_('expr LT expr')
+    @_("expr LT expr")
     def expr(self, p):
         return p.expr0 < p.expr1
 
-    @_('expr GTE expr')
+    @_("expr GTE expr")
     def expr(self, p):
         return p.expr0 >= p.expr1
 
-    @_('expr LTE expr')
+    @_("expr LTE expr")
     def expr(self, p):
         return p.expr0 <= p.expr1
 
-    @_('expr EQ expr')
+    @_("expr EQ expr")
     def expr(self, p):
         return Eq(p.expr0, p.expr1)
 
-    @_('expr NEQ expr')
+    @_("expr NEQ expr")
     def expr(self, p):
         return Ne(p.expr0, p.expr1)
 
-    @_('LPAR expr RPAR')
+    @_("LPAR expr RPAR")
     def expr(self, p):
         return p.expr
 
-    @_('expr')
+    @_("expr")
     def ruleParam(self, p):
         return p.expr
 
-    #@_('axis')
-    #def ruleParam(self, p):
+    # @_('axis')
+    # def ruleParam(self, p):
     #    return p.axis
 
-    @_('ruleParam')
+    @_("ruleParam")
     def ruleParams(self, p):
-       return [p.ruleParam]
+        return [p.ruleParam]
 
-    @_('ruleParams COMMA ruleParam')
+    @_("ruleParams COMMA ruleParam")
     def ruleParams(self, p):
         p.ruleParams.append(p.ruleParam)
         return p.ruleParams
 
-    @_('AXIS')
+    @_("AXIS")
     def axis(self, p):
         return self.axes[p.AXIS]
-        
-    @_('INT')
+
+    @_("INT")
     def axis(self, p):
         return p.INT
 
-    @_('IDENT')
+    @_("IDENT")
     def axis(self, p):
         return symbols(p.IDENT)
-
-
