@@ -7,19 +7,22 @@
 # ================================
 
 
-from psb import *
 import unittest
 
+from psb import *
+
+
 class TestParser(unittest.TestCase):
-    basicCube = Model(Position(0,0,0), CoordinateSystem((1,0,0), (0,1,0), (0,0,1)), Size(10,10,10))
+    basicCube = Model(Position(0, 0, 0), CoordinateSystem((1, 0, 0), (0, 1, 0), (0, 0, 1)), Size(10, 10, 10))
 
     def testSimpleSplitAndColour(self):
-        grammar = Grammar("grammars\/split_and_colour", "plot")
+        grammar = Grammar(r"grammars\/split_and_colour", "plot")
         grammar.run(self.basicCube, 1)
 
     def testProbabilisticRules(self):
-        grammar = Grammar("grammars\/probabilistic_split", "plot")
+        grammar = Grammar(r"grammars\/probabilistic_split", "plot")
         grammar.run(self.basicCube, 1)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

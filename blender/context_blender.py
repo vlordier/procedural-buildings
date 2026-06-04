@@ -1,10 +1,9 @@
-#from context import Context
+# from context import Context
 import bmesh
 
 
-#class ContextBlender(Context):
-class ContextBlender():
-
+# class ContextBlender(Context):
+class ContextBlender:
     objStack = []
 
     # Takes a Blender context
@@ -29,21 +28,17 @@ class ContextBlender():
         mesh = obj.data
         print(mesh)
         bm = bmesh.from_edit_mesh(mesh)
-        print(bm)# select all faces
+        print(bm)  # select all faces
         for f in bm.faces:
             f.select = True
 
-        edges = [e for e in bm.edges]
-        faces = [f for f in bm.faces]
+        edges = list(bm.edges)
+        faces = list(bm.faces)
         geom = []
         geom.extend(edges)
         geom.extend(faces)
 
-        result = bmesh.ops.bisect_plane(bm,
-                                        dist=0.01,
-                                        geom=geom,
-                                        plane_co=(0, 0, 0),
-                                        plane_no=(1, 0, 0))
+        result = bmesh.ops.bisect_plane(bm, dist=0.01, geom=geom, plane_co=(0, 0, 0), plane_no=(1, 0, 0))
         print(result)
         bmesh.update_edit_mesh(mesh)
         bm.free()
@@ -54,7 +49,7 @@ class ContextBlender():
 
     # Colour current context
     def colour(self, obj, colour):
-        mat = bpy.data.materials.new(name="MaterialName") #set new material to variable
+        mat = bpy.data.materials.new(name="MaterialName")  # set new material to variable
 
         # Assign it to object
         if obj.data.materials:
