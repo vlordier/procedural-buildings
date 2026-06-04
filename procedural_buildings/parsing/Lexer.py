@@ -21,6 +21,7 @@ class Lexer(SlyLexer):
         RESIZESCOPE,
         TRANSLATE,
         SCALE,
+        INSET,
         LPAR,
         RPAR,
         LCURL,
@@ -71,6 +72,7 @@ class Lexer(SlyLexer):
     IDENT["pi"] = PI
     IDENT["nil"] = NIL
     IDENT["scale"] = SCALE
+    IDENT["inset"] = INSET
 
     # Special symbols
     ARROW = r"-->"
