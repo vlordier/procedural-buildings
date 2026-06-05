@@ -15,17 +15,17 @@ doorB = 0.55
 bandR = 0.85
 bandG = 0.70
 bandB = 0.60
-decorHeight = 0.05
+bandHeight = 0.05
 road --> colour(0.2, 0.2, 0.2){I(rect)}
 path --> colour(0.3, 0.3, 0.3){I(rect)}
 block --> split(y){~1 : road | ~20 : lots | ~1 : road}
 lots --> split(x){~(randint(4, 7)) : lot(0) | ~1 : path | ~(randint(5, 8)) : lot(1) | ~1 : path | ~(randint(4, 7)) : lot(2)}
 lot(n) : n == 0 --> colour(0.6, 0.5, 0.4){split(y){~1 : colour(0.3, 0.3, 0.3){I(rect)} | ~(randint(3, 6)) : tower(n)}}
-lot(n) : n == 1 --> split(y){~1 : pathToHouse | ~(randint(2, 5)) : ukrHouse}
-lot(n) : n == 2 --> split(y){~1 : pathToHouse | ~(randint(2, 5)) : ukrHouse}
+lot(n) : n == 1 --> split(y){~1 : pathToHouse | ~(randint(2, 5)) : ukrainianHouse}
+lot(n) : n == 2 --> split(y){~1 : pathToHouse | ~(randint(2, 5)) : ukrainianHouse}
 pathToHouse --> split(x){~1 : colour(0.3, 0.3, 0.3){I(rect)} | ~0.08 : colour(0.85, 0.85, 0.85){split(z){~0.4 : nil | ~0.6 : I(rect)}} | ~1 : colour(0.3, 0.3, 0.3){I(rect)}}
-ukrHouse --> split(z){~1 : walls | ~(pitch * (1 + 2*overhang)/2) : colour(thatchR, thatchG, thatchB){roof}}
-walls --> split(z){~decorHeight : colour(bandR, bandG, bandB){S(~(1 + 2*overhang), ~(1 + 2*overhang), ~1){I(rect)}} | ~1 : comp(f){front : colour(wallR, wallG, wallB){frontWall} | left : colour(wallR, wallG, wallB){I(rect)} | right : colour(wallR, wallG, wallB){I(rect)} | back : colour(wallR, wallG, wallB){I(rect)}}}
+ukrainianHouse --> split(z){~1 : walls | ~(pitch * (1 + 2*overhang)/2) : colour(thatchR, thatchG, thatchB){roof}}
+walls --> split(z){~bandHeight : colour(bandR, bandG, bandB){S(~(1 + 2*overhang), ~(1 + 2*overhang), ~1){I(rect)}} | ~1 : comp(f){front : colour(wallR, wallG, wallB){frontWall} | left : colour(wallR, wallG, wallB){I(rect)} | right : colour(wallR, wallG, wallB){I(rect)} | back : colour(wallR, wallG, wallB){I(rect)}}}
 frontWall : width > 7 --> split(z){~2.5 : split(x){~1 : I(rect) | ~1.5 : door | ~1.5 : windowPair | ~1 : I(rect)} | ~1 : split(x){~1 : I(rect) | ~1.5 : windowPair | ~1 : I(rect) | ~1.5 : windowPair | ~1 : I(rect)}}
 frontWall --> split(z){~2.5 : split(x){~1 : I(rect) | ~1.5 : door | ~1 : I(rect)} | ~1 : split(x){~1 : I(rect) | ~1.5 : windowPair | ~1 : I(rect)}}
 windowPair --> split(x){~0.3 : shutter | ~1.5 : windowUnit | ~0.3 : shutter}
@@ -33,5 +33,5 @@ windowUnit --> opening(0.15){colour(0.9, 0.92, 0.95){I(rect)} | I(window3)}
 shutter --> colour(shutterR, shutterG, shutterB){I(rect)}
 door --> opening(0.1){colour(doorR, doorG, doorB){I(rect)} | I(door)}
 roof --> S(width * (1 + 2*overhang), depth * (1 + 2*overhang), pitch * width * (1 + 2*overhang) / 2){T(-width * overhang, -depth * overhang, 0){I(triangle)}}
-tower(n) : n == 0 --> split(x){~1 : I(column) | ~4 : opening(0.3){I(rect) | I(window3)} | ~1 : I(column)}
-tower(n) --> split(x){~1 : I(column) | ~4 : opening(0.3){I(rect) | I(window3)} | ~1 : I(column) | ~4 : opening(0.3){I(rect) | I(window3)} | ~1 : I(column)}
+tower(n) : n == 0 --> split(x){~1 : I(column) | ~4 : opening(0.3){I(rect) | I(window3)} | ~1 : I(column)} : 1
+tower(n) : n == 0 --> split(x){~1 : I(column) | ~4 : opening(0.3){I(rect) | I(window3)} | ~1 : I(column) | ~4 : opening(0.3){I(rect) | I(window3)} | ~1 : I(column)} : 1
