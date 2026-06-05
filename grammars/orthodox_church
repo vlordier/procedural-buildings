@@ -1,0 +1,15 @@
+whiteR = 0.95
+whiteG = 0.93
+whiteB = 0.88
+goldR = 0.85
+goldG = 0.75
+goldB = 0.20
+roofR = 0.25
+roofG = 0.40
+roofB = 0.35
+plot --> S(~1, ~1, 15){church}
+church --> split(z){~10 : churchWalls | ~5 : churchRoof}
+churchWalls --> colour(whiteR, whiteG, whiteB){comp(f){front : churchFacade | left : I(rect) | right : I(rect) | back : I(rect)}}
+churchFacade --> split(x){~1 : I(rect) | ~2 : opening(0.3){colour(0.3,0.3,0.4){I(rect)} | nil} | ~1 : I(rect) | ~2 : opening(0.3){colour(0.3,0.3,0.4){I(rect)} | nil} | ~1 : I(rect)}
+churchRoof --> split(y){~1 : colour(roofR, roofG, roofB){I(triangle)} | ~0.6 : domeDrum | ~1 : colour(roofR, roofG, roofB){I(triangle)}}
+domeDrum --> split(z){~1 : colour(whiteR, whiteG, whiteB){I(rect)} | ~2 : colour(goldR, goldG, goldB){I(dome)}}
