@@ -1,3 +1,7 @@
+# @meta
+# materials: stone,roof_tile
+# params: keepHeight=12,towerHeight=8
+# complexity: high
 castleHeight = 18
 wallHeight = 6
 keepHeight = 8

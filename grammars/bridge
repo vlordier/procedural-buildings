@@ -1,3 +1,7 @@
+# @meta
+# materials: stone
+# params: span=12,pillarW=2
+# complexity: low
 span = 6
 pillarW = 1
 pillarH = 4

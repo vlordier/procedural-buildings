@@ -1,3 +1,7 @@
+# @meta
+# materials: (none)
+# params: none
+# complexity: high
 N = randint(8,10)
 M = randint(8,10)
 F = (N*N+M*M)/4

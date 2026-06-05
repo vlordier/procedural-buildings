@@ -1,3 +1,7 @@
+# @meta
+# materials: (gin-configured)
+# params: panelR=0.75
+# complexity: medium
 # Grammar that uses declarable variables — gin-config can override these.
 # Run with: python -m procedural_buildings -i grammars/gin_demo -o outputs/gin_demo.obj -g configs/wide_building.gin
 windowWidth = randint(2, 4)

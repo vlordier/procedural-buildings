@@ -1,3 +1,7 @@
+# @meta
+# materials: plaster,glass
+# params: none
+# complexity: medium
 # Opening demo with procedural colors via gin-config
 # Override with: -p 'grammar_var_overrides.values = {"door_r": 0.6, "door_g": 0.3, "door_b": 0.2}'
 door_r = 0.6

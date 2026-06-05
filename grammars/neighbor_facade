@@ -1,3 +1,7 @@
+# @meta
+# materials: plaster,roof_tile
+# params: none
+# complexity: medium
 # Neighbor-aware facade: side bays narrow, center bay adapts to neighbor widths
 plot --> split(y){~1 : base | ~12 : facade | ~1 : roof}
 facade --> split(x){~2 : left_bay | ~6 : center_bay | ~2 : right_bay}

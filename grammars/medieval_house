@@ -1,3 +1,7 @@
+# @meta
+# materials: timber,plaster,roof_tile
+# params: none
+# complexity: medium
 whiteR = 0.90
 whiteG = 0.85
 whiteB = 0.80

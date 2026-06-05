@@ -1,3 +1,7 @@
+# @meta
+# materials: plaster,roof_tile,gold
+# params: none
+# complexity: medium
 whiteR = 0.95
 whiteG = 0.93
 whiteB = 0.88

@@ -1,3 +1,7 @@
+# @meta
+# materials: brick,roof_tile,glass
+# params: wallHeight=8,roofPitch=0.5
+# complexity: high
 brickR = 0.70
 brickG = 0.30
 brickB = 0.20

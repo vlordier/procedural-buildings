@@ -1,3 +1,7 @@
+# @meta
+# materials: glass,metal,plaster
+# params: none
+# complexity: high
 glassR = 0.45
 glassG = 0.65
 glassB = 0.85

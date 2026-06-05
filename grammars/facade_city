@@ -1,3 +1,7 @@
+# @meta
+# materials: plaster,roof_tile
+# params: none
+# complexity: high
 N = randint(3, 8)
 plot --> split(y){~1 : base | ~(N * 3) : floors(0) | ~1 : roof}
 floors(i) : i < N --> split(y){~3 : floor | ~0.5 : band | ~(N * 3) : floors(i + 1)}
