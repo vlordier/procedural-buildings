@@ -37,10 +37,19 @@ class Primitive:
             verts.append(coords)
             i += 1
         self.numVerts = i - startOfVerts
-        # Save any other data in the file about the primitive object
+        self.uvs = []
+        self.normals = []
         self.otherData = []
-        while lines[i][0:2] != "f ":
-            self.otherData.append(lines[i] + "\n")
+        while i < len(lines) and (len(lines[i]) < 2 or lines[i][0:2] != "f "):
+            line = lines[i]
+            if line[0:2] == "vt":
+                parts = line.split(" ")
+                self.uvs.append((float(parts[1]), float(parts[2])))
+            elif line[0:2] == "vn":
+                parts = line.split(" ")
+                self.normals.append((float(parts[1]), float(parts[2]), float(parts[3])))
+            else:
+                self.otherData.append(line + "\n")
             i += 1
         self.faceData = []
         # Save the face data later so we know which faces use which vertices

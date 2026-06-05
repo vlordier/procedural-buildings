@@ -56,6 +56,7 @@ class Lexer(SlyLexer):
         GTE,
         LTE,
         FLIP,
+        MATERIAL,
     }
 
     # Tokens
@@ -85,6 +86,7 @@ class Lexer(SlyLexer):
     IDENT["scale"] = SCALE
     IDENT["inset"] = INSET
     IDENT["flip"] = FLIP
+    IDENT["material"] = MATERIAL
 
     # Special symbols
     ARROW = r"-->"

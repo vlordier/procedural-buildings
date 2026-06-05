@@ -14,6 +14,7 @@ class ContextOBJ:
         self.prims = prims
         self.vertCount = 0
         self.currentColour = None
+        self.currentMaterial = None
 
     # Insert the given primitive into our object data
     # The position, size and orientation of the primitive depends on scope
@@ -73,6 +74,10 @@ class ContextOBJ:
         self.objFileText = []
         self.vertCount = 0
         self.currentColour = None
+        self.currentMaterial = None
 
     def colour(self, col: tuple, scope) -> None:
         self.currentColour = col
+
+    def material(self, name: str) -> None:
+        self.currentMaterial = name

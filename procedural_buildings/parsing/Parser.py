@@ -9,6 +9,7 @@ from ..Ops import (
     OpComp,
     OpFlip,
     OpInset,
+    OpMaterial,
     OpNil,
     OpOpening,
     OpPrimitive,
@@ -160,6 +161,14 @@ class Parser(SlyParser):
     @_("COLOUR col LCURL singleOp RCURL")
     def singleOp(self, p):
         return OpColour(*p.col, childOps=[p.singleOp])
+
+    @_("MATERIAL LPAR IDENT RPAR")
+    def singleOp(self, p):
+        return OpMaterial(p.IDENT)
+
+    @_("MATERIAL LPAR IDENT RPAR LCURL singleOp RCURL")
+    def singleOp(self, p):
+        return OpMaterial(p.IDENT, childOps=[p.singleOp])
 
     @_("ROTATE LPAR axis COMMA expr RPAR LCURL singleOp RCURL")
     def singleOp(self, p):

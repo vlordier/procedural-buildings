@@ -630,3 +630,13 @@ class OpFlip(Op):
         env = scope_env(env, scope)
         if self.childOps:
             self.childOps[0].run(context, scope, env)
+
+
+class OpMaterial(Op):
+    opName = OpName.MATERIAL
+
+    def run(self, context, scope, env):
+        material_name = self.args.evaluate(env)[0]
+        context.material(material_name)
+        if self.childOps:
+            self.childOps[0].run(context, scope, scope_env(env, scope))

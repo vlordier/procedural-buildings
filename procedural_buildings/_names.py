@@ -17,6 +17,7 @@ class OpName(StrEnum):
     OPENING = "opening"
     DO = "do"
     FLIP = "flip"
+    MATERIAL = "material"
 
 
 class Axis(StrEnum):
