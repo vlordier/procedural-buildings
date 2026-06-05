@@ -58,8 +58,8 @@ def test_comp_top_face():
 
 def test_comp_invalid_face():
     scope = Scope.freshScope(POS, SIZE)
-    with pytest.raises(ValueError):
-        Face("invalid_face")
+    with pytest.raises(RuntimeError, match="Invalid face name"):
+        scope.comp("invalid_face")
 
 
 def test_inset_creates_inner_and_four_frames():

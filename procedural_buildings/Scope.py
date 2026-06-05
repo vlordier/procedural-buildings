@@ -145,17 +145,17 @@ class Scope:
     # Return a scope that is restricted to just the given face
     def comp(self, face: Face) -> Scope:
         s = self.size
-        if face is Face.TOP:
+        if face == Face.TOP:
             return Scope(self.pos, self.rotMat, np.array([s[0], s[1], 0])).translate(np.array([0, 0, s[2]]))
-        elif face is Face.BOTTOM:
+        elif face == Face.BOTTOM:
             return Scope(self.pos, self.rotMat, np.array([s[0], s[1], 0]))
-        elif face is Face.BACK:
+        elif face == Face.BACK:
             return Scope(self.pos, self.rotMat, np.array([s[0], 0, s[2]])).translate(np.array([0, s[1], 0]))
-        elif face is Face.FRONT:
+        elif face == Face.FRONT:
             return Scope(self.pos, self.rotMat, np.array([s[0], 0, s[2]]))
-        elif face is Face.RIGHT:
+        elif face == Face.RIGHT:
             return Scope(self.pos, self.rotMat, np.array([0, s[1], s[2]])).translate(np.array([s[0], 0, 0]))
-        elif face is Face.LEFT:
+        elif face == Face.LEFT:
             return Scope(self.pos, self.rotMat, np.array([0, s[1], s[2]]))
         else:
             raise RuntimeError(f"Invalid face name {face} used in comp operation")
