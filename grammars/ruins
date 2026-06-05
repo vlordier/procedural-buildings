@@ -1,0 +1,10 @@
+# @meta
+# materials: stone
+# params:
+# complexity: low
+ruinHeight = 4
+stoneR = 0.55
+stoneG = 0.50
+stoneB = 0.45
+plot --> S(~1, ~1, ruinHeight){ruins}
+ruins --> colour(stoneR, stoneG, stoneB){comp(f){front : split(x){~1 : I(rect) | ~1 : I(rect) | ~1 : I(rect)} | left : I(rect) | right : I(rect)}}

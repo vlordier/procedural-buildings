@@ -1,0 +1,13 @@
+# @meta
+# materials: wood, roof_tile
+# params:
+# complexity: low
+barnHeight = 8
+wallR = 0.55
+wallG = 0.35
+wallB = 0.15
+roofR = 0.40
+roofG = 0.25
+roofB = 0.20
+plot --> S(~1, ~1, barnHeight){barn}
+barn --> split(z){~6 : colour(wallR, wallG, wallB){I(rect)} | ~2 : colour(roofR, roofG, roofB){S(width * 1.1, depth * 1.1, 1.8){T(-width * 0.05, -depth * 0.05, 0){I(triangle)}}}}

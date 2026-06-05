@@ -116,6 +116,96 @@ SHOWCASE_GRAMMARS = [
         "start_rule": "plot",
         "start_scope": (0, 0, 0, 8, 8, 12),
     },
+    {
+        "name": "cottage",
+        "path": "grammars/cottage",
+        "materials": ["plaster", "roof_tile"],
+        "complexity": "low",
+        "params": {},
+        "start_rule": "plot",
+        "start_scope": (0, 0, 0, 8, 8, 6),
+    },
+    {
+        "name": "barn",
+        "path": "grammars/barn",
+        "materials": ["wood", "roof_tile"],
+        "complexity": "low",
+        "params": {},
+        "start_rule": "plot",
+        "start_scope": (0, 0, 0, 12, 8, 8),
+    },
+    {
+        "name": "lighthouse",
+        "path": "grammars/lighthouse",
+        "materials": ["stone", "glass"],
+        "complexity": "medium",
+        "params": {"towerHeight": 12},
+        "start_rule": "plot",
+        "start_scope": (0, 0, 0, 4, 4, 14),
+    },
+    {
+        "name": "windmill",
+        "path": "grammars/windmill",
+        "materials": ["stone", "wood"],
+        "complexity": "medium",
+        "params": {},
+        "start_rule": "plot",
+        "start_scope": (0, 0, 0, 5, 5, 10),
+    },
+    {
+        "name": "greenhouse",
+        "path": "grammars/greenhouse",
+        "materials": ["glass", "metal"],
+        "complexity": "low",
+        "params": {},
+        "start_rule": "plot",
+        "start_scope": (0, 0, 0, 8, 8, 5),
+    },
+    {
+        "name": "train_station",
+        "path": "grammars/train_station",
+        "materials": ["stone", "glass", "roof_tile"],
+        "complexity": "medium",
+        "params": {},
+        "start_rule": "plot",
+        "start_scope": (0, 0, 0, 15, 8, 10),
+    },
+    {
+        "name": "ruins",
+        "path": "grammars/ruins",
+        "materials": ["stone"],
+        "complexity": "low",
+        "params": {},
+        "start_rule": "plot",
+        "start_scope": (0, 0, 0, 8, 8, 4),
+    },
+    {
+        "name": "watchtower",
+        "path": "grammars/watchtower",
+        "materials": ["stone"],
+        "complexity": "low",
+        "params": {},
+        "start_rule": "plot",
+        "start_scope": (0, 0, 0, 3, 3, 10),
+    },
+    {
+        "name": "chapel",
+        "path": "grammars/chapel",
+        "materials": ["stone", "roof_tile", "glass"],
+        "complexity": "medium",
+        "params": {},
+        "start_rule": "plot",
+        "start_scope": (0, 0, 0, 8, 8, 8),
+    },
+    {
+        "name": "factory",
+        "path": "grammars/factory",
+        "materials": ["brick", "glass", "metal"],
+        "complexity": "high",
+        "params": {},
+        "start_rule": "plot",
+        "start_scope": (0, 0, 0, 12, 8, 11),
+    },
 ]
 
 
@@ -126,6 +216,7 @@ class BuildingGenerator:
         seed: int | None = None,
         materials: str | None = None,
         params: dict | None = None,
+        gin_params: list | None = None,
         start_rule: str = "plot",
         start_scope: tuple = (0, 0, 0, 8, 8, 12),
     ):
@@ -142,14 +233,16 @@ class BuildingGenerator:
             np.random.seed(seed)
 
         gin_files = []
-        gin_params = []
+        _gin_params = []
         if materials:
             gin_files.append(materials)
         if params:
-            gin_params.append(f"grammar_var_overrides.values = {params}")
+            _gin_params.append(f"grammar_var_overrides.values = {params}")
+        if gin_params:
+            _gin_params.extend(gin_params)
         gin.config.clear_config()
         gin.config.unlock_config()
-        gin.parse_config_files_and_bindings(gin_files, gin_params)
+        gin.parse_config_files_and_bindings(gin_files, _gin_params)
 
     @classmethod
     def library(cls):
@@ -166,11 +259,25 @@ class BuildingGenerator:
             candidates = SHOWCASE_GRAMMARS
         choice = _random.Random(seed).choice(candidates)
         merged_params = {**choice.get("params", {}), **(params or {})}
+
+        gin_params = []
+        if materials is None:
+            from .materials import random_material_presets
+
+            mat_names = choice.get("materials", [])
+            mat_names = [m for m in mat_names if not m.startswith("(")]
+            if mat_names:
+                presets = random_material_presets(mat_names, seed=seed)
+                gin_params.append(f"material_presets.values = {presets}")
+        if merged_params:
+            gin_params.append(f"grammar_var_overrides.values = {merged_params}")
+
         return cls(
             grammar=choice["path"],
             seed=seed,
             materials=materials,
-            params=merged_params if merged_params else None,
+            params=None,
+            gin_params=gin_params or None,
             start_rule=choice.get("start_rule", "plot"),
             start_scope=choice.get("start_scope", (0, 0, 0, 8, 8, 12)),
         )

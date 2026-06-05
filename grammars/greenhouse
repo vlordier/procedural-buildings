@@ -1,0 +1,10 @@
+# @meta
+# materials: glass, metal
+# params:
+# complexity: low
+height = 5
+glassR = 0.60
+glassG = 0.70
+glassB = 0.80
+plot --> S(~1, ~1, height){greenhouse}
+greenhouse --> split(z){~2 : colour(glassR, glassG, glassB){comp(f){front : I(rect) | left : I(rect) | right : I(rect) | back : I(rect)}} | ~3 : colour(glassR, glassG, glassB){S(width * 1.05, depth * 1.05, 1.5){T(-width * 0.025, -depth * 0.025, 0){I(triangle)}}}}

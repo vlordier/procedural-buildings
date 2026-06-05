@@ -1,0 +1,18 @@
+# @meta
+# materials: stone, roof_tile, glass
+# params:
+# complexity: medium
+chapelHeight = 6
+towerHeight = 8
+stoneR = 0.65
+stoneG = 0.60
+stoneB = 0.55
+roofR = 0.40
+roofG = 0.25
+roofB = 0.20
+glassR = 0.60
+glassG = 0.70
+glassB = 0.80
+plot --> S(~1, ~1, towerHeight){chapel}
+chapel --> split(z){~chapelHeight : colour(stoneR, stoneG, stoneB){chapelWalls} | ~2 : colour(roofR, roofG, roofB){S(width * 1.1, depth * 1.1, 2.5){T(-width * 0.05, -depth * 0.05, 0){I(triangle)}}}}
+chapelWalls --> comp(f){front : split(x){~1 : I(rect) | ~1 : I(rect) | ~1 : I(rect)} | left : I(rect) | right : I(rect) | back : I(rect)}

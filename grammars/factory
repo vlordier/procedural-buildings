@@ -1,0 +1,19 @@
+# @meta
+# materials: brick, glass, metal
+# params:
+# complexity: high
+wallHeight = 8
+roofHeight = 3
+brickR = 0.70
+brickG = 0.30
+brickB = 0.20
+glassR = 0.60
+glassG = 0.70
+glassB = 0.80
+metalR = 0.50
+metalG = 0.50
+metalB = 0.50
+plot --> S(~1, ~1, wallHeight + roofHeight){factory}
+factory --> split(z){~wallHeight : colour(brickR, brickG, brickB){factoryWalls} | ~roofHeight : colour(metalR, metalG, metalB){factoryRoof}}
+factoryWalls --> colour(brickR, brickG, brickB){comp(f){front : split(x){~1 : I(rect) | ~2 : opening(0.5){colour(glassR, glassG, glassB){I(rect)} | nil} | ~1 : I(rect) | ~2 : opening(0.5){colour(glassR, glassG, glassB){I(rect)} | nil} | ~1 : I(rect)} | left : I(rect) | right : I(rect) | back : I(rect)}}
+factoryRoof --> colour(metalR, metalG, metalB){S(width * 1.05, depth * 1.05, roofHeight){T(-width * 0.025, -depth * 0.025, 0){I(triangle)}}}

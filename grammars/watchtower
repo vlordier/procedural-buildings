@@ -1,0 +1,10 @@
+# @meta
+# materials: stone
+# params:
+# complexity: low
+towerHeight = 10
+stoneR = 0.60
+stoneG = 0.55
+stoneB = 0.50
+plot --> S(~0.3, ~0.3, towerHeight){watchtower}
+watchtower --> split(z){~1 : colour(stoneR, stoneG, stoneB){S(width * 1.3, depth * 1.3, 1){T(-width * 0.15, -depth * 0.15, 0){I(rect)}}} | ~8 : colour(stoneR, stoneG, stoneB){I(rect)} | ~1 : colour(stoneR, stoneG, stoneB){S(width * 1.3, depth * 1.3, 1){T(-width * 0.15, -depth * 0.15, 0){I(rect)}}}}

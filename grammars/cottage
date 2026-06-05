@@ -1,0 +1,13 @@
+# @meta
+# materials: plaster, roof_tile
+# params:
+# complexity: low
+cottageHeight = 6
+wallR = 0.85
+wallG = 0.82
+wallB = 0.78
+roofR = 0.40
+roofG = 0.25
+roofB = 0.20
+plot --> S(~1, ~1, cottageHeight){cottage}
+cottage --> split(z){~4 : colour(wallR, wallG, wallB){comp(f){front : split(x){~1 : I(rect) | ~2 : I(rect) | ~1 : I(rect)} | left : I(rect) | right : I(rect) | back : I(rect)}} | ~2 : colour(roofR, roofG, roofB){S(width * 1.1, depth * 1.1, 1.5){T(-width * 0.05, -depth * 0.05, 0){I(triangle)}}}}

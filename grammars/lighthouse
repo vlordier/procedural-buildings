@@ -1,0 +1,14 @@
+# @meta
+# materials: stone, glass
+# params: towerHeight=12
+# complexity: medium
+towerHeight = 12
+lanternHeight = 2
+stoneR = 0.60
+stoneG = 0.55
+stoneB = 0.50
+glassR = 0.60
+glassG = 0.70
+glassB = 0.80
+plot --> S(~0.5, ~0.5, towerHeight + lanternHeight){lighthouse}
+lighthouse --> split(z){~towerHeight : colour(stoneR, stoneG, stoneB){I(rect)} | ~lanternHeight : colour(glassR, glassG, glassB){I(rect)}}

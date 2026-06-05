@@ -1,0 +1,13 @@
+# @meta
+# materials: stone, wood
+# params:
+# complexity: medium
+towerHeight = 10
+stoneR = 0.65
+stoneG = 0.58
+stoneB = 0.50
+roofR = 0.40
+roofG = 0.25
+roofB = 0.20
+plot --> S(~0.6, ~0.6, towerHeight){windmill}
+windmill --> split(z){~8 : colour(stoneR, stoneG, stoneB){I(rect)} | ~2 : colour(roofR, roofG, roofB){I(pyramid)}}
