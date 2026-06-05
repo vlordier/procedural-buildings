@@ -1,5 +1,3 @@
-import pytest
-
 from procedural_buildings.Ops import Args, Op, OpNil, OpPrimitive
 
 

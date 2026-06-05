@@ -1,7 +1,8 @@
 import numpy as np
 import pytest
-from procedural_buildings.Scope import Scope
+
 from procedural_buildings.parsing.Rule import Size
+from procedural_buildings.Scope import Scope
 
 POS = np.array([0.0, 0.0, 0.0])
 SIZE = np.array([8.0, 8.0, 12.0])

@@ -1,24 +1,23 @@
 import numpy as np
-import pytest
 
 from procedural_buildings.ContextObj import ContextOBJ
 from procedural_buildings.Ops import (
-    OpSplit,
+    OpChooseRuleWithPriority,
+    OpColour,
+    OpComp,
+    OpDo,
+    OpInset,
+    OpNil,
+    OpOpening,
+    OpPrimitive,
     OpRepeat,
     OpRepeatN,
-    OpComp,
-    OpColour,
-    OpChooseRuleWithPriority,
     OpResizeScope,
-    OpScale,
-    OpTranslate,
     OpRotate,
-    OpPrimitive,
-    OpDo,
-    OpNil,
-    OpInset,
-    OpOpening,
+    OpScale,
     OpSetParams,
+    OpSplit,
+    OpTranslate,
 )
 from procedural_buildings.parsing.Rule import Size
 from procedural_buildings.Scope import Scope
@@ -102,9 +101,7 @@ def test_rotate_applies_rotation():
 def test_priority_chooses_one_child():
     a = OpPrimitive("rect")
     b = OpPrimitive("rect")
-    op = OpChooseRuleWithPriority(
-        perChildArgs=((1, 0), (True, True)), childOps=[a, b]
-    )
+    op = OpChooseRuleWithPriority(perChildArgs=((1, 0), (True, True)), childOps=[a, b])
     ctx = ContextOBJ()
     op.run(ctx, SCOPE, ENV)
     assert len(ctx.objFileText) > 0

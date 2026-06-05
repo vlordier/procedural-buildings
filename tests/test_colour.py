@@ -1,8 +1,9 @@
 import numpy as np
+
 from procedural_buildings.ContextObj import ContextOBJ
-from procedural_buildings.Scope import Scope
-from procedural_buildings.Ops import OpColour, OpPrimitive
 from procedural_buildings.ObjReader import objToOpGraph
+from procedural_buildings.Ops import OpColour, OpPrimitive
+from procedural_buildings.Scope import Scope
 
 
 def _find_op_colour(op):
