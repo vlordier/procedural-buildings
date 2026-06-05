@@ -14,4 +14,7 @@ class GrammarParser(ParserAbstract):
         if not grammar.endswith("\n"):
             grammar += "\n"
         grammar = re.sub(r"^\d+:\s*", "", grammar, flags=re.MULTILINE)
-        return checker.check(parser.parse(lexer.tokenize(grammar)))
+        tokens = lexer.tokenize(grammar)
+        if lexer.errors:
+            raise RuntimeError("\n".join(lexer.errors))
+        return checker.check(parser.parse(tokens))

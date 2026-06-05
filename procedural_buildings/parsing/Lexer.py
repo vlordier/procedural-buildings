@@ -7,6 +7,10 @@ log = get_logger(__name__)
 
 
 class Lexer(SlyLexer):
+    def __init__(self):
+        super().__init__()
+        self.errors = []
+
     tokens = {
         IDENT,
         INT,
@@ -123,5 +127,6 @@ class Lexer(SlyLexer):
         return t
 
     def error(self, t):
-        log.warning(f"Illegal character '{t.value[0]}'")
-        self.index += 1
+        msg = f"Illegal character '{t.value[0]}' at line {self.lineno}"
+        self.errors.append(msg)
+        raise RuntimeError(msg)

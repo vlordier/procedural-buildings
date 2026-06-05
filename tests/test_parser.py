@@ -42,6 +42,11 @@ class TestLexer:
         expected = ["PLUS", "MINUS", "TIMES", "DIVIDE", "ASSIGN", "COLON", "ARROW", "TILDE", "LPAR", "RPAR"]
         assert types == expected
 
+    def test_lexer_bad_char_raises(self):
+        lexer = Lexer()
+        with pytest.raises(Exception, match="Illegal character"):
+            list(lexer.tokenize("plot --> R(z, pi@6){I(rect)}"))
+
 
 class TestGrammarParser:
     def test_parse_simple(self):
