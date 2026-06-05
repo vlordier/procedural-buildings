@@ -8,7 +8,7 @@ from ._constants import MAX_CONSECUTIVE_FAILURES, NUM_AXES
 
 # Represents a bounding box for a primitive object
 from ._logging import get_logger
-from .Ops import OpColour, OpNil, OpPrimitive, OpSplit
+from .Ops import Op, OpColour, OpNil, OpPrimitive, OpSplit
 from .parsing.Rule import Size
 
 log = get_logger(__name__)
