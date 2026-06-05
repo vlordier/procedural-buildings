@@ -55,6 +55,7 @@ class Lexer(SlyLexer):
         LT,
         GTE,
         LTE,
+        FLIP,
     }
 
     # Tokens
@@ -83,6 +84,7 @@ class Lexer(SlyLexer):
     IDENT["opening"] = OPENING
     IDENT["scale"] = SCALE
     IDENT["inset"] = INSET
+    IDENT["flip"] = FLIP
 
     # Special symbols
     ARROW = r"-->"

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from collections import defaultdict
 from random import random
 
@@ -617,3 +618,15 @@ class OpSetParams(Op):
         envNew = scope_env(env, scope)
         envNew.update(zip(child.paramNames, paramVals, strict=True))
         child.run(context, scope, envNew)
+
+
+# Flip the scope around an axis (rotate by pi)
+class OpFlip(Op):
+    opName = OpName.FLIP
+
+    def run(self, context, scope, env):
+        axis = self.args.evaluate(env)[0]
+        scope = scope.rotate(axis, math.pi)
+        env = scope_env(env, scope)
+        if self.childOps:
+            self.childOps[0].run(context, scope, env)

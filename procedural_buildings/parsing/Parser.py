@@ -7,6 +7,7 @@ from .._names import Axis, Face
 from ..Ops import (
     OpColour,
     OpComp,
+    OpFlip,
     OpInset,
     OpNil,
     OpOpening,
@@ -186,6 +187,10 @@ class Parser(SlyParser):
     @_("INSET LPAR expr RPAR LCURL singleOp BAR singleOp RCURL")
     def singleOp(self, p):
         return OpInset(p.expr, childOps=[p.singleOp0, p.singleOp1])
+
+    @_("FLIP LPAR axis RPAR LCURL op RCURL")
+    def singleOp(self, p):
+        return OpFlip(p.axis, childOps=[p.op])
 
     @_("LPAR expr COMMA expr COMMA expr RPAR")
     def col(self, p):

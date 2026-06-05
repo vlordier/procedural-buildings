@@ -7,6 +7,7 @@ from procedural_buildings.Ops import (
     OpColour,
     OpComp,
     OpDo,
+    OpFlip,
     OpInset,
     OpNil,
     OpOpening,
@@ -137,3 +138,12 @@ def test_set_params_sets_env():
     op = OpSetParams(5, childOps=[rect])
     ctx = ContextOBJ()
     op.run(ctx, SCOPE, ENV)
+
+
+def test_flip_runs():
+
+    scope = Scope.freshScope(np.array([0, 0, 0]), np.array([8, 8, 12]))
+    env = {"width": 8, "depth": 8, "height": 12}
+    op = OpFlip(0, childOps=[OpPrimitive("rect")])
+    ctx = ContextOBJ()
+    op.run(ctx, scope, env)
