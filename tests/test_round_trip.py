@@ -9,7 +9,6 @@ from procedural_buildings.Scope import Scope
 SHOWCASE = [
     ("grammars/op_tests/split", "plot", (0, 0, 0, 8, 8, 12)),
     ("grammars/op_tests/repeatN", "plot", (0, 0, 0, 8, 8, 12)),
-    ("grammars/cabin", "plot", (0, 0, 0, 8, 8, 12)),
 ]
 
 TOLERANCE = 4

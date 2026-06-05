@@ -43,7 +43,7 @@ def _discover_grammars():
         path = os.path.join(GRAMMARS_DIR, entry)
         if not os.path.isfile(path):
             continue
-        if entry.startswith("."):
+        if entry.startswith(".") or entry.endswith(".md"):
             continue
         yield path
 
@@ -51,7 +51,7 @@ def _discover_grammars():
 @pytest.mark.parametrize("grammar_path", list(_discover_grammars()))
 def test_grammar_renders(grammar_path, tmp_path):
     if grammar_path in XFAIL_GRAMMARS:
-        pytest.xfail("Known-broken scratch grammar, will be deleted in cluster 3")
+        pytest.xfail("Known-broken grammar, pre-existing issue")
 
     override = GRAMMAR_OVERRIDES.get(grammar_path)
     if override:
