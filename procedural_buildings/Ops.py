@@ -372,6 +372,15 @@ class OpChooseRuleWithPriority(Op):
             "depth": scope.size[1],
             "height": scope.size[2],
         }
+        for key, val in scope.neighbors.items():
+            if key == "left_width":
+                scope_env["left_width"] = val[0]
+                scope_env["left_depth"] = val[1]
+                scope_env["left_height"] = val[2]
+            elif key == "right_width":
+                scope_env["right_width"] = val[0]
+                scope_env["right_depth"] = val[1]
+                scope_env["right_height"] = val[2]
         child = self.chooseChild(scope_env)
         child.run(context, scope, env)
 

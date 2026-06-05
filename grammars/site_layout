@@ -1,0 +1,11 @@
+# Site layout: block subdivided into lots with varied buildings
+road --> colour(0.2, 0.2, 0.2){I(rect)}
+path --> colour(0.3, 0.3, 0.3){I(rect)}
+block --> split(y){~1 : road | ~20 : lots | ~1 : road}
+lots --> split(x){~(randint(4, 7)) : lot(0) | ~1 : path | ~(randint(5, 8)) : lot(1) | ~1 : path | ~(randint(4, 7)) : lot(2)}
+lot(n) : n == 0 --> colour(0.6, 0.5, 0.4){split(y){~1 : colour(0.3, 0.3, 0.3){I(rect)} | ~(randint(3, 6)) : tower(n)}}
+lot(n) : n == 1 --> colour(0.8, 0.7, 0.6){split(y){~0.5 : colour(0.3, 0.3, 0.3){I(rect)} | ~(randint(2, 5)) : house(n)}}
+lot(n) : n == 2 --> colour(0.5, 0.4, 0.3){split(y){~0.5 : colour(0.3, 0.3, 0.3){I(rect)} | ~(randint(2, 5)) : house(n)}}
+tower(n) : n == 0 --> split(x){~1 : I(column) | ~4 : opening(0.3){I(rect) | I(window3)} | ~1 : I(column)}
+tower(n) --> split(x){~1 : I(column) | ~4 : opening(0.3){I(rect) | I(window3)} | ~1 : I(column) | ~4 : opening(0.3){I(rect) | I(window3)} | ~1 : I(column)}
+house(n) --> split(x){~1 : I(column) | ~4 : opening(0.2){I(rect) | I(window3)} | ~1 : I(column)}

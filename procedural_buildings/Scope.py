@@ -8,12 +8,12 @@ from .parsing.Rule import Size
 class Scope:
     _AXIS_VECTORS = [np.array([1, 0, 0]), np.array([0, 1, 0]), np.array([0, 0, 1])]
 
-    # Create a new scope using the given position, rotation and size
     def __init__(self, pos, rotMat, size):
         self.pos = pos
         self.rotMat = rotMat
         self.size = size
         self.mat = None
+        self.neighbors = {}
 
     # Resize a paricular axis of this scope. Return the result as a new scope
     def resizeAxis(self, axis, newSize):
@@ -77,14 +77,17 @@ class Scope:
         scale = self.calcScale(axis, splitSizes)
 
         for s in splitSizes:
-            # Scale if it's a relative size
             actualSize = s.size * scale if s.isRelative else s.size
             actualSizeVec = actualSize * axisVector
             sizeVec = actualSizeVec + unchangedSizes
             tVec = self.rotMat.dot(offset)
-            # Create a new scope for this split section
             newScopes.append(Scope(self.pos + tVec, self.rotMat, sizeVec))
             offset = offset + actualSizeVec
+        for i, child in enumerate(newScopes):
+            if i > 0:
+                child.neighbors["left_width"] = newScopes[i - 1].size
+            if i < len(newScopes) - 1:
+                child.neighbors["right_width"] = newScopes[i + 1].size
         return newScopes
 
     # Split the scope in given direction in to n equal-sized scopes

@@ -1,0 +1,9 @@
+# Neighbor-aware facade: side bays narrow, center bay adapts to neighbor widths
+plot --> split(y){~1 : base | ~12 : facade | ~1 : roof}
+facade --> split(x){~2 : left_bay | ~6 : center_bay | ~2 : right_bay}
+left_bay --> I(column)
+right_bay --> I(column)
+center_bay : left_width < 5 --> split(x){~0.5 : I(column) | ~3 : opening(0.3){I(rect) | I(window3)} | ~0.5 : I(column)}
+center_bay --> opening(0.3){I(rect) | I(window3)}
+base --> colour(0.4, 0.35, 0.3){I(rect)}
+roof --> colour(0.5, 0.2, 0.1){I(pediment)}
