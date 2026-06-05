@@ -29,6 +29,7 @@ def main(argv):
     ginParams = []
     verbose = False
     seed = None
+    validate = False
     usage = (
         "Usage:\nprocedural_buildings -i <input_file> -o <output_file>"
         " [-s | --start_scope <x_min,y_min,z_min,x_max,y_max,z_max>]"
@@ -37,6 +38,7 @@ def main(argv):
         " [-f | --file_per_obj] [-g | --gin_file <config.gin>]"
         " [-p | --gin_param <bindings>] [-v | --verbose]"
         " [--seed <N>]"
+        " [--validate]"
     )
     try:
         opts, _args = getopt.getopt(
@@ -54,6 +56,7 @@ def main(argv):
                 "gin_param=",
                 "verbose",
                 "seed=",
+                "validate",
             ],
         )
     except getopt.GetoptError:
@@ -112,11 +115,27 @@ def main(argv):
             except ValueError:
                 log.error("Error: --seed must be an integer")
                 sys.exit(2)
+        elif opt == "--validate":
+            validate = True
 
     if verbose:
         setup_logging(logging.DEBUG)
 
-    if not inFile or not outFile:
+    if validate:
+        if not inFile:
+            log.error("Please provide an input file with -i for validation")
+            print(usage)
+            sys.exit(1)
+        try:
+            p = Processor()
+            p.validateGrammar(inFile, startRule)
+            log.info(f"Validation passed: {inFile}")
+            sys.exit(0)
+        except Exception as e:
+            log.error(f"Validation failed: {e}")
+            sys.exit(1)
+
+    if not validate and (not inFile or not outFile):
         log.error("Please provide both an input and output file")
         print(usage)
         sys.exit()

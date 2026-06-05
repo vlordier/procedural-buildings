@@ -63,6 +63,16 @@ class Processor:
         return parser.parse(grammarText)[startRule]
 
     # Given a grammar, write the result of running that grammar to an output file
+    def validateGrammar(self, inFile, startRule="plot"):
+        """Parse and simplify a grammar, raising on any error.
+        Returns the simplified op graph root on success."""
+        with open(inFile) as f:
+            grammarText = f.read()
+        parser = GrammarParser()
+        result = parser.parse(grammarText)
+        opGraph = result[startRule]
+        return opGraph
+
     def grammarToObject(self, grammarName, startRule, startScope, outFile):
         opGraph = self.grammarFileToOpGraph(grammarName, startRule)
         self.opGraphToObj(opGraph, startScope, outFile)
