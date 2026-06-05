@@ -1,0 +1,4 @@
+# Procedural Buildings — gradient
+# White-to-blue vertical gradient
+# python -m procedural_buildings -i grammars/material_building -o outputs/gradient.obj -s 0,0,0,8,8,12 -g configs/gradient.gin
+grammar_var_overrides.values = {"wallPattern": 4, "wallR": 0.95, "wallG": 0.95, "wallB": 0.95, "patR": 0.20, "patG": 0.40, "patB": 0.60}

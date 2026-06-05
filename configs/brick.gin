@@ -1,0 +1,3 @@
+# Procedural Buildings — brick wall config
+# python -m procedural_buildings -i grammars/material_building -o outputs/brick.obj -s 0,0,0,8,8,12 -g configs/brick.gin
+grammar_var_overrides.values = {"wallPattern": 0, "wallR": 0.70, "wallG": 0.30, "wallB": 0.20, "roofR": 0.40, "roofG": 0.25, "roofB": 0.20}

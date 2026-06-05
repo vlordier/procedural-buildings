@@ -1,0 +1,4 @@
+# Procedural Buildings — nordic style
+# White wall with blue horizontal stripes
+# python -m procedural_buildings -i grammars/material_building -o outputs/nordic.obj -s 0,0,0,8,8,12 -g configs/nordic.gin
+grammar_var_overrides.values = {"wallPattern": 1, "wallR": 0.95, "wallG": 0.92, "wallB": 0.88, "patR": 0.20, "patG": 0.40, "patB": 0.55, "stripeW": 0.1}

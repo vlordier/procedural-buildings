@@ -1,0 +1,4 @@
+# Procedural Buildings — checkerboard
+# Cream + brown checkerboard pattern
+# python -m procedural_buildings -i grammars/material_building -o outputs/checker.obj -s 0,0,0,8,8,12 -g configs/checker.gin
+grammar_var_overrides.values = {"wallPattern": 3, "wallR": 0.95, "wallG": 0.90, "wallB": 0.85, "patR": 0.60, "patG": 0.50, "patB": 0.35, "tileS": 0.3}
