@@ -2,6 +2,7 @@
 
 Creates a hemisphere with a lantern on top, 0-1 in xy, 0-0.75 in z.
 """
+
 import math
 
 # Parameters
