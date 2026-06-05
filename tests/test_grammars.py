@@ -17,25 +17,7 @@ GRAMMAR_OVERRIDES = {
     "grammars/engineered_garage": ("rule0", (0, 0, 0, 8, 8, 12)),
 }
 
-XFAIL_GRAMMARS = {
-    "grammars/colour_blue",
-    "grammars/fancy_building",
-    "grammars/present",
-    "grammars/rand_as_rule_priority",
-    "grammars/rand_in_expr",
-    "grammars/relative_split",
-    "grammars/repeat_split_rand",
-    "grammars/resize_move_colour",
-    "grammars/rules_as_ops",
-    "grammars/simple_comp",
-    "grammars/simple_declaration",
-    "grammars/simple_house",
-    "grammars/simple_primitive",
-    "grammars/simple_rand",
-    "grammars/simple_repeat",
-    "grammars/walled_house",
-    "grammars/ends",
-}
+XFAIL_GRAMMARS = {}
 
 
 def _discover_grammars():

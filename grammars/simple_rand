@@ -1,1 +1,1 @@
-0: plot --> S(rand*10,1,1) I(rect)
+0: plot --> S(rand(0,1)*10,1,1){I(rect)}
