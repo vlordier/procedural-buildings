@@ -1,0 +1,20 @@
+numFloors = 5
+floorHeight = 3
+panelR = 0.75
+panelG = 0.73
+panelB = 0.70
+bandR = 0.60
+bandG = 0.58
+bandB = 0.55
+glassR = 0.60
+glassG = 0.70
+glassB = 0.80
+windowW = 1.2
+windowH = 1.5
+plot --> S(~1, ~1, numFloors * floorHeight){sovietBlock}
+sovietBlock --> comp(f){front : colour(panelR, panelG, panelB){facade} | left : colour(panelR, panelG, panelB){I(rect)} | right : colour(panelR, panelG, panelB){I(rect)} | back : colour(panelR, panelG, panelB){I(rect)}}
+facade --> repeatN(z, numFloors){floor}
+floor --> split(z){~0.2 : colour(bandR, bandG, bandB){I(rect)} | ~1 : floorPanel}
+floorPanel --> split(z){~1 : colour(panelR, panelG, panelB){I(rect)} | ~windowH : windows}
+windows --> repeatN(x, 4){windowUnit}
+windowUnit --> split(x){~0.3 : colour(panelR, panelG, panelB){I(rect)} | ~windowW : colour(glassR, glassG, glassB){I(rect)}}

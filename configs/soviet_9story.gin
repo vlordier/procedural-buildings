@@ -1,0 +1,5 @@
+# Procedural Buildings — gin config
+# Override Soviet block parameters. Run with:
+# python -m procedural_buildings -i grammars/soviet_block -o outputs/soviet9.obj -s 0,0,0,12,8,27 -g configs/soviet_9story.gin
+
+grammar_var_overrides.values = {"numFloors": 9, "panelR": 0.85, "panelG": 0.82, "panelB": 0.78, "windowW": 1.0}
