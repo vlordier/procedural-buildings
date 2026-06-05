@@ -1,0 +1,17 @@
+castleHeight = 18
+wallHeight = 6
+keepHeight = 8
+roofHeight = 4
+stoneR = 0.60
+stoneG = 0.55
+stoneB = 0.50
+roofR = 0.40
+roofG = 0.25
+roofB = 0.20
+plot --> S(~1, ~1, castleHeight){castle}
+castle --> split(z){~wallHeight : colour(stoneR, stoneG, stoneB){castleBase} | ~(keepHeight + roofHeight) : colour(stoneR, stoneG, stoneB){keepAndRoof}}
+castleBase --> comp(f){front : wallFace | left : wallFace | right : wallFace | back : wallFace}
+wallFace --> split(x){~1.5 : colour(stoneR, stoneG, stoneB){I(rect)} | ~1 : colour(stoneR, stoneG, stoneB){I(rect)} | ~1.5 : colour(stoneR, stoneG, stoneB){I(rect)}}
+keepAndRoof --> split(z){~keepHeight : keepBody | ~roofHeight : colour(roofR, roofG, roofB){I(pyramid)}}
+keepBody --> split(x){~1 : colour(stoneR, stoneG, stoneB){I(rect)} | ~0.5 : keepCentre | ~1 : colour(stoneR, stoneG, stoneB){I(rect)}}
+keepCentre --> split(y){~1 : colour(stoneR, stoneG, stoneB){I(rect)} | ~0.5 : colour(stoneR, stoneG, stoneB){I(rect)} | ~1 : colour(stoneR, stoneG, stoneB){I(rect)}}

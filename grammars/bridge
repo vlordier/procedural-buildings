@@ -1,0 +1,13 @@
+span = 6
+pillarW = 1
+pillarH = 4
+deckThick = 1.5
+archHeight = 2
+stoneR = 0.55
+stoneG = 0.50
+stoneB = 0.45
+plot --> S(~1, ~1, pillarH + deckThick){bridge}
+bridge --> split(z){~pillarH : colour(stoneR, stoneG, stoneB){pillars} | ~deckThick : colour(stoneR, stoneG, stoneB){deck}}
+pillars --> split(y){~pillarW : colour(stoneR, stoneG, stoneB){I(rect)} | ~span : archSpan | ~pillarW : colour(stoneR, stoneG, stoneB){I(rect)}}
+archSpan --> split(z){~(pillarH - archHeight) : colour(stoneR, stoneG, stoneB){I(rect)} | ~archHeight : nil}
+deck --> I(rect)
