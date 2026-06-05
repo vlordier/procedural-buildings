@@ -1,5 +1,6 @@
 import numpy as np
 
+from procedural_buildings._names import Face
 from procedural_buildings.ContextObj import ContextOBJ
 from procedural_buildings.Ops import (
     OpChooseRuleWithPriority,
@@ -69,7 +70,7 @@ def test_repeat_n_creates_exact_count():
 
 
 def test_comp_creates_faces():
-    op = OpComp(perChildArgs=("front",), childOps=[OpPrimitive("rect")])
+    op = OpComp(perChildArgs=(Face.FRONT,), childOps=[OpPrimitive("rect")])
     ctx = ContextOBJ()
     op.run(ctx, SCOPE, ENV)
 

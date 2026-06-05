@@ -2,6 +2,7 @@
 
 import numpy as np
 
+from procedural_buildings._names import Face
 from procedural_buildings.ContextObj import ContextOBJ
 from procedural_buildings.Ops import OpColour, OpComp, OpResizeScope, OpSplit, scope_env
 from procedural_buildings.parsing.Rule import Size
@@ -134,7 +135,7 @@ def test_comp_propagates_face_dimensions():
             captured["depth"] = env.get("depth")
             captured["height"] = env.get("height")
 
-    comp = OpComp(perChildArgs=("front",), childOps=[CaptureOp()])
+    comp = OpComp(perChildArgs=(Face.FRONT,), childOps=[CaptureOp()])
     comp.run(context, scope, {})
     assert captured["width"] == 10.0
     assert captured["depth"] == 0.0

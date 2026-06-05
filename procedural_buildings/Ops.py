@@ -9,6 +9,7 @@ from sympy.core.relational import Relational
 from sympy.logic.boolalg import BooleanAtom
 
 from ._constants import MAX_TOSTRING_DEPTH
+from ._names import OpName
 from .parsing.Rule import Size
 from .RandRange import RandRange
 
@@ -271,7 +272,7 @@ class Op:
 
 # Split context in given direction into given size sections
 class OpSplit(Op):
-    opName = "split"
+    opName = OpName.SPLIT
 
     def run(self, context, scope, env):
         axis, sizes = self.args.evaluate(env)
@@ -305,7 +306,7 @@ class OpSplit(Op):
 
 # Split the scope into uniform scopes and repeat an operation on each new scope
 class OpRepeat(Op):
-    opName = "repeat"
+    opName = OpName.REPEAT
 
     def run(self, context, scope, env):
         axis, _sizes = self.args.evaluate(env)
@@ -325,7 +326,7 @@ class OpRepeat(Op):
 
 # Split the scope into uniform scopes and repeat an operation on each new scope
 class OpRepeatN(Op):
-    opName = "repeatN"
+    opName = OpName.REPEATN
 
     def run(self, context, scope, env):
         axis, n = self.args.evaluate(env)
@@ -344,7 +345,7 @@ class OpRepeatN(Op):
 
 # Split the scope into components (e.g. faces) and apply rules to each
 class OpComp(Op):
-    opName = "comp"
+    opName = OpName.COMP
 
     def run(self, context, scope, env):
         faces = self.args[0]
@@ -355,7 +356,7 @@ class OpComp(Op):
 
 # Colour current context
 class OpColour(Op):
-    opName = "colour"
+    opName = OpName.COLOUR
 
     def run(self, context, scope, env):
         col = self.args.evaluate(env)
@@ -467,7 +468,7 @@ class OpChooseRuleWithPriority(Op):
 
 # Scale the current scope
 class OpResizeScope(Op):
-    opName = "S"
+    opName = OpName.S
 
     def run(self, context, scope, env):
         v = self.args.evaluate(env)
@@ -477,7 +478,7 @@ class OpResizeScope(Op):
 
 # Scale the current scope by factor(s)
 class OpScale(Op):
-    opName = "scale"
+    opName = OpName.SCALE
 
     def run(self, context, scope, env):
         v = self.args.evaluate(env)
@@ -487,7 +488,7 @@ class OpScale(Op):
 
 # Translate the current object
 class OpTranslate(Op):
-    opName = "T"
+    opName = OpName.T
 
     def run(self, context, scope, env):
         v = self.args.evaluate(env)
@@ -497,7 +498,7 @@ class OpTranslate(Op):
 
 # Rotate the current object
 class OpRotate(Op):
-    opName = "R"
+    opName = OpName.R
 
     def run(self, context, scope, env):
         axis, angle = self.args.evaluate(env)
@@ -507,7 +508,7 @@ class OpRotate(Op):
 
 # Put a primitive in the current scope
 class OpPrimitive(Op):
-    opName = "I"
+    opName = OpName.I
 
     def run(self, context, scope, env):
         prim = self.args[0]
@@ -531,7 +532,7 @@ class OpDo(Op):
 
 # Nil op does nothing
 class OpNil(Op):
-    opName = "nil"
+    opName = OpName.NIL
 
     # Run on a scope, just leave that scope blank and do nothing
     def run(self, context, scope, env):
@@ -543,7 +544,7 @@ class OpNil(Op):
 
 # Create an inset (recessed panel with frame) in the current scope
 class OpInset(Op):
-    opName = "inset"
+    opName = OpName.INSET
 
     def run(self, context, scope, env):
         (amount,) = self.args.evaluate(env)
@@ -571,7 +572,7 @@ class OpInset(Op):
 
 # Create a wall opening (hole) for doors, windows, garage doors
 class OpOpening(Op):
-    opName = "opening"
+    opName = OpName.OPENING
 
     def run(self, context, scope, env):
         (depth,) = self.args.evaluate(env)

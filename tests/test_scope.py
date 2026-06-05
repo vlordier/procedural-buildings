@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from procedural_buildings._names import Face
 from procedural_buildings.parsing.Rule import Size
 from procedural_buildings.Scope import Scope
 
@@ -41,7 +42,7 @@ def test_repeat_n_creates_exact_count():
 
 def test_comp_front_face():
     scope = Scope.freshScope(POS, np.array([8, 8, 12]))
-    face = scope.comp("front")
+    face = scope.comp(Face.FRONT)
     assert face is not None
     assert abs(face.size[0] - 8.0) < 1e-6
     assert abs(face.size[2] - 12.0) < 1e-6
@@ -49,7 +50,7 @@ def test_comp_front_face():
 
 def test_comp_top_face():
     scope = Scope.freshScope(POS, np.array([8, 8, 12]))
-    face = scope.comp("top")
+    face = scope.comp(Face.TOP)
     assert face is not None
     assert abs(face.size[0] - 8.0) < 1e-6
     assert abs(face.size[1] - 8.0) < 1e-6
@@ -57,8 +58,8 @@ def test_comp_top_face():
 
 def test_comp_invalid_face():
     scope = Scope.freshScope(POS, SIZE)
-    with pytest.raises(RuntimeError, match="Invalid face name"):
-        scope.comp("invalid_face")
+    with pytest.raises(ValueError):
+        Face("invalid_face")
 
 
 def test_inset_creates_inner_and_four_frames():

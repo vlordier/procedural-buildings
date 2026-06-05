@@ -3,6 +3,7 @@ from numpy import pi
 from sly import Parser as SlyParser
 from sympy import Eq, Ne, symbols
 
+from .._names import Axis, Face
 from ..Ops import (
     OpColour,
     OpComp,
@@ -44,7 +45,7 @@ class Parser(SlyParser):
     def __init__(self):
         self.vars = {}
         self.ruleFromLabel = {}
-        self.axes = {"x": 0, "y": 1, "z": 2}
+        self.axes = {a.value: i for i, a in enumerate(Axis)}
 
     def parse(self, grammar):
         super().parse(grammar)
@@ -209,11 +210,11 @@ class Parser(SlyParser):
 
     @_("FACENAME COLON op")
     def compParams(self, p):
-        return ([p.FACENAME], [p.op])
+        return ([Face(p.FACENAME)], [p.op])
 
     @_("compParams BAR FACENAME COLON op")
     def compParams(self, p):
-        p.compParams[0].append(p.FACENAME)
+        p.compParams[0].append(Face(p.FACENAME))
         p.compParams[1].append(p.op)
         return p.compParams
 

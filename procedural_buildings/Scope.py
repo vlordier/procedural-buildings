@@ -4,6 +4,7 @@ from math import ceil
 
 import numpy as np
 
+from ._names import Face
 from .parsing.Rule import Size
 
 
@@ -142,20 +143,19 @@ class Scope:
         return [top, bottom, left, right], child
 
     # Return a scope that is restricted to just the given face
-    def comp(self, face: str) -> Scope:
+    def comp(self, face: Face) -> Scope:
         s = self.size
-        # TODO: could maybe be neater with dict
-        if face == "top":
+        if face is Face.TOP:
             return Scope(self.pos, self.rotMat, np.array([s[0], s[1], 0])).translate(np.array([0, 0, s[2]]))
-        elif face == "bottom":
+        elif face is Face.BOTTOM:
             return Scope(self.pos, self.rotMat, np.array([s[0], s[1], 0]))
-        elif face == "back":
+        elif face is Face.BACK:
             return Scope(self.pos, self.rotMat, np.array([s[0], 0, s[2]])).translate(np.array([0, s[1], 0]))
-        elif face == "front":
+        elif face is Face.FRONT:
             return Scope(self.pos, self.rotMat, np.array([s[0], 0, s[2]]))
-        elif face == "right":
+        elif face is Face.RIGHT:
             return Scope(self.pos, self.rotMat, np.array([0, s[1], s[2]])).translate(np.array([s[0], 0, 0]))
-        elif face == "left":
+        elif face is Face.LEFT:
             return Scope(self.pos, self.rotMat, np.array([0, s[1], s[2]]))
         else:
             raise RuntimeError(f"Invalid face name {face} used in comp operation")
