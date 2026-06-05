@@ -18,19 +18,8 @@ GRAMMAR_OVERRIDES = {
 }
 
 XFAIL_GRAMMARS = {
-    "grammars/foo",
-    "grammars/window",
-    "grammars/cabin",
-    "grammars/overlap",
-    "grammars/also_nice_house",
-    "grammars/better_house",
     "grammars/colour_blue",
     "grammars/fancy_building",
-    "grammars/home",
-    "grammars/house_with_prims",
-    "grammars/nice_house",
-    "grammars/nice_roof_house",
-    "grammars/nice_roofs_2",
     "grammars/present",
     "grammars/rand_as_rule_priority",
     "grammars/rand_in_expr",
