@@ -234,7 +234,37 @@ def boxesToOp(boxes: list, initialContainer: Container) -> Op:
         log.debug(f"container bounds: {[b.container.bounds for b in boxes]}")
         raise RuntimeError("Failed to split boxes")
 
-    return initialContainer.toOp()
+    return lift_colour(initialContainer.toOp())
+
+
+def lift_colour(op):
+    if not hasattr(op, "childOps") or not op.childOps:
+        return op
+    op.childOps = [lift_colour(c) for c in op.childOps]
+
+    if isinstance(op, OpSplit):
+        new_children = []
+        i = 0
+        while i < len(op.childOps):
+            child = op.childOps[i]
+            if isinstance(child, OpColour):
+                group = [child.childOps[0]]
+                j = i + 1
+                while (
+                    j < len(op.childOps) and isinstance(op.childOps[j], OpColour) and op.childOps[j].args == child.args
+                ):
+                    group.append(op.childOps[j].childOps[0])
+                    j += 1
+                if len(group) > 1:
+                    sub_sizes = tuple(op.args.perChildArgs[k] for k in range(i, j))
+                    sub_split = OpSplit(op.axis, perChildArgs=sub_sizes, childOps=group)
+                    new_children.append(OpColour(child.args, childOps=[sub_split]))
+                    i = j
+                    continue
+            new_children.append(child)
+            i += 1
+        op.childOps = new_children
+    return op
 
 
 # boxes = [Box(x, f"prim{i}") for i, x in enumerate([[[0.0, 100.0], [0.0, 25.874126], [51.111111, 100.0]], [[0.0, 27.058824], [70.27972, 100.0], [0.0, 100.0]]])]
