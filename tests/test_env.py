@@ -76,7 +76,11 @@ def test_split_neighbors_propagate():
                 "right_w": env.get("right_width"),
             })
 
-    split = OpSplit(0, perChildArgs=(Size(3.0, False), Size(4.0, False), Size(3.0, False)), childOps=[CaptureOp(), CaptureOp(), CaptureOp()])
+    split = OpSplit(
+        0,
+        perChildArgs=(Size(3.0, False), Size(4.0, False), Size(3.0, False)),
+        childOps=[CaptureOp(), CaptureOp(), CaptureOp()],
+    )
     split.run(context, scope, {})
     assert len(captured) == 3
     assert captured[0].get("left_w") is None
