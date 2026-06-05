@@ -1,5 +1,6 @@
 import getopt
 import logging
+import random
 import sys
 from os import getcwd
 from os import sep as path_sep
@@ -27,6 +28,7 @@ def main(argv):
     ginFiles = []
     ginParams = []
     verbose = False
+    seed = None
     usage = (
         "Usage:\nprocedural_buildings -i <input_file> -o <output_file>"
         " [-s | --start_scope <x_min,y_min,z_min,x_max,y_max,z_max>]"
@@ -34,6 +36,7 @@ def main(argv):
         " [-n <num_buildings>] [-d | --separation <separation_distance>]"
         " [-f | --file_per_obj] [-g | --gin_file <config.gin>]"
         " [-p | --gin_param <bindings>] [-v | --verbose]"
+        " [--seed <N>]"
     )
     try:
         opts, _args = getopt.getopt(
@@ -50,6 +53,7 @@ def main(argv):
                 "gin_file=",
                 "gin_param=",
                 "verbose",
+                "seed=",
             ],
         )
     except getopt.GetoptError:
@@ -102,6 +106,12 @@ def main(argv):
             ginParams.append(arg)
         elif opt in ("-v", "--verbose"):
             verbose = True
+        elif opt == "--seed":
+            try:
+                seed = int(arg)
+            except ValueError:
+                log.error("Error: --seed must be an integer")
+                sys.exit(2)
 
     if verbose:
         setup_logging(logging.DEBUG)
@@ -112,6 +122,10 @@ def main(argv):
         sys.exit()
 
     gin.parse_config_files_and_bindings(ginFiles, ginParams)
+
+    if seed is not None:
+        random.seed(seed)
+        np.random.seed(seed)
 
     p = Processor()
     if not ginFiles:
