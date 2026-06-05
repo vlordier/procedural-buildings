@@ -1,6 +1,8 @@
 import os
-import pytest
+
 import numpy as np
+import pytest
+
 from procedural_buildings.Processor import Processor
 from procedural_buildings.Scope import Scope
 
@@ -46,6 +48,7 @@ XFAIL_GRAMMARS = {
     "grammars/ends",
 }
 
+
 def _discover_grammars():
     for entry in sorted(os.listdir(GRAMMARS_DIR)):
         path = os.path.join(GRAMMARS_DIR, entry)
@@ -54,6 +57,7 @@ def _discover_grammars():
         if entry.startswith("."):
             continue
         yield path
+
 
 @pytest.mark.parametrize("grammar_path", list(_discover_grammars()))
 def test_grammar_renders(grammar_path, tmp_path):

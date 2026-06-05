@@ -8,9 +8,9 @@ import gin
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from tests.test_golden import REFERENCE, _hash_file, GOLDEN_DIR
 from procedural_buildings.Processor import Processor
 from procedural_buildings.Scope import Scope
+from tests.test_golden import GOLDEN_DIR, REFERENCE, _hash_file
 
 random.seed(42)
 np.random.seed(42)

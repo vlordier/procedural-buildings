@@ -1,6 +1,8 @@
 import os
-import pytest
+
 import numpy as np
+import pytest
+
 from procedural_buildings.Processor import Processor
 from procedural_buildings.Scope import Scope
 
