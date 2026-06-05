@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from itertools import cycle
 
 import numpy as np
@@ -13,7 +15,7 @@ log = get_logger(__name__)
 
 
 class Box:
-    def __init__(self, bounds, prim, colour=None):
+    def __init__(self, bounds, prim, colour=None) -> None:
         self.boundVals = [[low, high] for low, high in bounds]
         self.bounds = tuple((Bound(low, True, self), Bound(high, False, self)) for (low, high) in self.boundVals)
         self.prim = OpPrimitive(prim)
@@ -52,7 +54,7 @@ class Bound:
 class Container:
     # Initially only set an axis
     # The bounds of the container must be set later by setBounds
-    def __init__(self, axis):
+    def __init__(self, axis: int) -> None:
         self.axis = axis
         self.children = []
         self.unmatched = 0
@@ -187,7 +189,7 @@ class PrimContainer:
 # that exactly bounds all the boxes, return a split operation that
 # places all the primitive boxes in their correct location when run
 # on a scope equal to the initial container
-def boxesToOp(boxes, initialContainer):
+def boxesToOp(boxes: list, initialContainer: Container) -> Op:
     initialContainer.numPrims = len(boxes)
     for box in boxes:
         box.container = initialContainer

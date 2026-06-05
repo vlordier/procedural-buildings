@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import defaultdict
 from random import random
 
@@ -27,7 +29,7 @@ def scope_env(env, scope):
 
 
 class Args:
-    def __init__(self, args, perChildArgs):
+    def __init__(self, args, perChildArgs=()) -> None:
         self.args = args
         self.perChildArgs = perChildArgs
         if len(perChildArgs) > 0:
@@ -36,7 +38,7 @@ class Args:
             self.allArgs = self.args
 
     # evaluate arg values
-    def evaluate(self, env):
+    def evaluate(self, env: dict) -> tuple:
         evaledArgs = tuple(self.evalArg(arg, env) for arg in self.allArgs)
         return evaledArgs
 
@@ -78,7 +80,7 @@ class Args:
         else:
             return Args(newArgs, perChildArgs=newPerChildArgs)
 
-    def combineArgs(self, arg1, arg2):
+    def combineArgs(self, arg1, arg2) -> Args | None:
         if arg1 == arg2:
             return arg1
         t1 = type(arg1)
@@ -130,7 +132,7 @@ class Args:
 
 
 class Op:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         perChildArgs = kwargs.get("perChildArgs", ())
         self.args = Args(args, perChildArgs)
         self.childOps = kwargs.get("childOps")
@@ -169,10 +171,10 @@ class Op:
             s += "\n".join([c._toStringWithIDs(newIndent) if not isinstance(c, str) else c for c in self.childOps])
         return s
 
-    def run(self, context, scope, env):
+    def run(self, context, scope, env) -> None:
         raise NotImplementedError
 
-    def simplify(self, seenOps, combArgs=False):
+    def simplify(self, seenOps, combArgs=False) -> Op | None:
         # Two ops that can definitely be merged should have the same hash
 
         ident = self.argsToHash() if combArgs else [self.__class__.__name__, *self.args.allArgs]
@@ -226,7 +228,7 @@ class Op:
 
     @staticmethod
     @staticmethod
-    def combineMany(ops):
+    def combineMany(ops: list) -> Op:
         n = len(ops)
         if n == 0:
             return OpNil()

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from math import ceil
 
 import numpy as np
@@ -8,7 +10,7 @@ from .parsing.Rule import Size
 class Scope:
     _AXIS_VECTORS = [np.array([1, 0, 0]), np.array([0, 1, 0]), np.array([0, 0, 1])]
 
-    def __init__(self, pos, rotMat, size):
+    def __init__(self, pos: np.ndarray, rotMat: np.ndarray, size: np.ndarray) -> None:
         self.pos = pos
         self.rotMat = rotMat
         self.size = size
@@ -28,23 +30,23 @@ class Scope:
         return Scope(self.pos, self.rotMat, newSize)
 
     # Return a new scope with the given size
-    def resize(self, newSize):
+    def resize(self, newSize) -> Scope:
         size = [s.size * t if s.isRelative else s.size for (s, t) in zip(newSize, self.size, strict=True)]
         return Scope(self.pos, self.rotMat, np.array(size))
 
     # Return a new scope with each axis scaled by the given factor(s)
-    def scale(self, factor):
+    def scale(self, factor: float | np.ndarray) -> Scope:
         factors = np.array([factor, factor, factor]) if np.isscalar(factor) else np.array(factor)
         newSize = self.size * factors
         return Scope(self.pos, self.rotMat, newSize)
 
     # Return a new scope representing the translation of this scope by the given vector
-    def translate(self, v):
+    def translate(self, v: np.ndarray) -> Scope:
         rotV = self.rotMat.dot(v)
         return Scope(rotV + self.pos, self.rotMat, self.size)
 
     # Return a new scope equivalent to this scope rotated around axis by th radians
-    def rotate(self, axis, th):
+    def rotate(self, axis: int, th: float) -> Scope:
         c = np.cos(th)
         s = np.sin(th)
         if axis == 0:
@@ -62,13 +64,13 @@ class Scope:
     # Create a new scope with the given position and size
     # The rotation on each axis of this new scope is 0
     @staticmethod
-    def freshScope(pos, size):
+    def freshScope(pos: np.ndarray, size: np.ndarray) -> Scope:
         I3 = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         return Scope(pos, I3, size)
 
     # Split the current scope along axis it sections with sizes given by
     # splitSizes. Returns a list of scopes representing each split section.
-    def split(self, axis, splitSizes):
+    def split(self, axis: int, splitSizes: tuple) -> list:
         newScopes = []
         axisVector = self._AXIS_VECTORS[axis]
         unchangedSizes = self.size * (1 - axisVector)
@@ -92,18 +94,18 @@ class Scope:
 
     # Split the scope in given direction in to n equal-sized scopes
     # where n = ceil(self.size[axis] / size)
-    def repeat(self, axis, size):
+    def repeat(self, axis: int, size: float) -> list:
         if size <= 0:
             raise ValueError(f"repeat size must be positive, got {size}")
         numRepeats = ceil(self.size[axis] / size)
         return self.repeatN(axis, numRepeats)
 
     # Split this scope along axis into n equally sizes scopes
-    def repeatN(self, axis, n):
+    def repeatN(self, axis: int, n: int) -> list:
         # just split with n split sections each of relative size 1
         return self.split(axis, [Size(1, True)] * n)
 
-    def inset(self, amount):
+    def inset(self, amount: float) -> tuple:
         if amount <= 0:
             raise ValueError(f"inset amount must be positive, got {amount}")
         if 2 * amount >= self.size[0] or 2 * amount >= self.size[2]:
@@ -121,7 +123,7 @@ class Scope:
         )
         return [top, bottom, left, right], inner
 
-    def opening(self, depth):
+    def opening(self, depth: float) -> tuple:
         if depth < 0:
             raise ValueError(f"opening depth must be non-negative, got {depth}")
         if depth >= self.size[2]:
@@ -140,7 +142,7 @@ class Scope:
         return [top, bottom, left, right], child
 
     # Return a scope that is restricted to just the given face
-    def comp(self, face):
+    def comp(self, face: str) -> Scope:
         s = self.size
         # TODO: could maybe be neater with dict
         if face == "top":

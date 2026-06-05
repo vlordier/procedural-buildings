@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from ._constants import OBJ_COORD_PRECISION
 from .BoxSplitter import Box, Container, boxesToOp
 from .Ops import Op
@@ -5,7 +7,7 @@ from .Primitive import Primitive, basicPrims
 
 
 # Given an object file name, create an operation graph representing the object
-def objToOpGraph(fname, primDict=None):
+def objToOpGraph(fname: str, primDict: dict | None = None) -> tuple:
     if primDict is None:
         primDict = basicPrims.copy()
     with open(fname) as f:

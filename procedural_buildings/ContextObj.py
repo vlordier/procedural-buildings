@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from ._constants import COLOUR_FMT_PRECISION
 from ._logging import get_logger
 from .Primitive import basicPrims
@@ -7,7 +9,7 @@ log = get_logger(__name__)
 
 class ContextOBJ:
     # Create a new context with prims being the set of known primitives
-    def __init__(self, prims=basicPrims):
+    def __init__(self, prims=basicPrims) -> None:
         self.objFileText = []
         self.prims = prims
         self.vertCount = 0
@@ -15,7 +17,7 @@ class ContextOBJ:
 
     # Insert the given primitive into our object data
     # The position, size and orientation of the primitive depends on scope
-    def addPrim(self, primName, scope):
+    def addPrim(self, primName: str, scope) -> None:
         if primName not in self.prims:
             log.warning(f"Failed to find prim with name: {primName}")
             log.warning(f"Available prims: {list(self.prims.keys())}")
@@ -44,7 +46,7 @@ class ContextOBJ:
         return (f"v {coords}\n" for coords in [" ".join([f"{c:.5f}" for c in xyz[:3]]) for xyz in vs])
 
     # Write the current object to a file
-    def writeToFile(self, fname):
+    def writeToFile(self, fname: str) -> None:
         try:
             with open(fname, "w") as f:
                 f.writelines(self.objFileText)
@@ -72,5 +74,5 @@ class ContextOBJ:
         self.vertCount = 0
         self.currentColour = None
 
-    def colour(self, col, scope):
+    def colour(self, col: tuple, scope) -> None:
         self.currentColour = col

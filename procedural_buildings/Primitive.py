@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 import numpy as np
@@ -9,7 +11,7 @@ from .BoxSplitter import Box
 class Primitive:
     # Given the lines of an object file that correspond to this primitive object,
     # create a new Primtive object that represents the object described in those lines
-    def __init__(self, lines):
+    def __init__(self, lines: list) -> None:
         i = 0
         while i < len(lines) and (len(lines[i]) < 2 or lines[i][0:2] != "o "):
             i += 1
