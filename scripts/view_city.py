@@ -1,4 +1,5 @@
 """View a city USD scene by reading the USD text format and rendering with pyglet."""
+import ctypes
 import json
 import os
 import re
@@ -6,20 +7,21 @@ import struct
 import sys
 
 import numpy as np
-from pyglet import app, clock, graphics, window
+from pyglet import app, clock, window
 from pyglet.gl import *
+from pyglet.graphics.shader import Shader, ShaderProgram
 
 VERTEX_SHADER = """
-#version 120
-attribute vec3 position;
-attribute vec3 normal;
-attribute vec2 texcoord;
+#version 150
+in vec3 position;
+in vec3 normal;
+in vec2 texcoord;
 uniform mat4 modelview;
 uniform mat4 projection;
 uniform mat3 normal_matrix;
-uniform vec3 light_dir;
-varying vec3 v_normal;
-varying vec2 v_texcoord;
+uniform vec3 base_color;
+out vec3 v_normal;
+out vec2 v_texcoord;
 void main() {
     gl_Position = projection * modelview * vec4(position, 1.0);
     v_normal = normalize(normal_matrix * normal);
@@ -28,15 +30,14 @@ void main() {
 """
 
 FRAGMENT_SHADER = """
-#version 120
-varying vec3 v_normal;
-varying vec2 v_texcoord;
+#version 150
+in vec3 v_normal;
 uniform vec3 base_color;
-uniform float roughness;
+out vec4 fragColor;
 void main() {
     vec3 light = normalize(vec3(0.5, 1.0, 0.3));
     float diff = max(0.0, dot(v_normal, light)) * 0.7 + 0.3;
-    gl_FragColor = vec4(base_color * diff, 1.0);
+    fragColor = vec4(base_color * diff, 1.0);
 }
 """
 
@@ -220,23 +221,18 @@ class CityViewer:
         glClearColor(0.6, 0.65, 0.7, 1.0)
         glEnable(GL_DEPTH_TEST)
 
-        # Create shader program
-        self.program = glCreateProgram()
-        vs = glCreateShader(GL_VERTEX_SHADER)
-        glShaderSource(vs, VERTEX_SHADER)
-        glCompileShader(vs)
-        fs = glCreateShader(GL_FRAGMENT_SHADER)
-        glShaderSource(fs, FRAGMENT_SHADER)
-        glCompileShader(fs)
-        glAttachShader(self.program, vs)
-        glAttachShader(self.program, fs)
-        glLinkProgram(self.program)
+        # Create and bind a VAO (required in OpenGL 3.2 core profile)
+        vao_id = (GLuint * 1)()
+        glGenVertexArrays(1, vao_id)
+        glBindVertexArray(vao_id[0])
+        self._vao_id = vao_id[0]
 
-        self.u_modelview = glGetUniformLocation(self.program, "modelview")
-        self.u_projection = glGetUniformLocation(self.program, "projection")
-        self.u_normal_matrix = glGetUniformLocation(self.program, "normal_matrix")
-        self.u_light_dir = glGetUniformLocation(self.program, "light_dir")
-        self.u_base_color = glGetUniformLocation(self.program, "base_color")
+        vert = Shader(VERTEX_SHADER, "vertex")
+        frag = Shader(FRAGMENT_SHADER, "fragment")
+        self.program = ShaderProgram(vert, frag)
+        self.pos_loc = glGetAttribLocation(self.program.id, ctypes.c_char_p(b"position"))
+        self.normal_loc = glGetAttribLocation(self.program.id, ctypes.c_char_p(b"normal"))
+        self.tex_loc = glGetAttribLocation(self.program.id, ctypes.c_char_p(b"texcoord"))
 
         # Build VBOs
         self.vbos = []
@@ -252,14 +248,18 @@ class CityViewer:
                 vbo_data.extend(normals[i] if i < len(normals) else [0, 1, 0])
                 vbo_data.extend(uvs[i] if i < len(uvs) else [0, 0])
 
-            vbo = glGenBuffers(3)
+            vbo_ids = (GLuint * 3)()
+            glGenBuffers(3, vbo_ids)
+            vbo = list(vbo_ids)
             # Vertex VBO (interleaved pos+normal+uv)
             glBindBuffer(GL_ARRAY_BUFFER, vbo[0])
-            glBufferData(GL_ARRAY_BUFFER, (GLfloat * len(vbo_data))(*vbo_data), GL_STATIC_DRAW)
+            arr = (GLfloat * len(vbo_data))(*vbo_data)
+            glBufferData(GL_ARRAY_BUFFER, ctypes.sizeof(arr), arr, GL_STATIC_DRAW)
             # Index VBO
             if indices:
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1])
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLuint * len(indices))(*indices), GL_STATIC_DRAW)
+                idx_arr = (GLuint * len(indices))(*indices)
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, ctypes.sizeof(idx_arr), idx_arr, GL_STATIC_DRAW)
 
             self.vbos.append({
                 "vbo": vbo,
@@ -301,7 +301,13 @@ class CityViewer:
 
     def draw(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glUseProgram(self.program)
+        self.program.use()
+
+        # Bind VAO (needed per-frame if context was lost)
+        try:
+            glBindVertexArray(self._vao_id)
+        except AttributeError:
+            pass
 
         w, h = self.win.width, self.win.height
         aspect = w / h
@@ -310,15 +316,10 @@ class CityViewer:
             [0, 1 / np.tan(np.radians(30)), 0, 0],
             [0, 0, -(1000 + 1) / (1000 - 1), -2 * 1000 * 1 / (1000 - 1)],
             [0, 0, -1, 0],
-        ], dtype=np.float32)
-        glUniformMatrix4fv(self.u_projection, 1, GL_TRUE, proj)
-
-        light = np.array([0.5, 1.0, 0.3], dtype=np.float32)
-        light = light / np.linalg.norm(light)
-        glUniform3fv(self.u_light_dir, 1, light)
+        ], dtype=np.float32).flatten()
+        self.program["projection"] = proj
 
         for v in self.vbos:
-            # Model matrix: translate then rotate Y
             tx, ty, tz = v["translate"]
             ry = v["rotate_y"]
             cos_y, sin_y = np.cos(ry), np.sin(ry)
@@ -332,7 +333,6 @@ class CityViewer:
             rot[2, 2] = cos_y
             model = model @ rot
 
-            # View matrix: orbit
             view = np.eye(4, dtype=np.float32)
             rx, ry_angle = np.radians(self.rot_x), np.radians(self.rot_y)
             view[0:3, 3] = [0, 0, -self.dist]
@@ -350,21 +350,19 @@ class CityViewer:
             view = view @ rot_y_mat
 
             mv = view @ model
-            glUniformMatrix4fv(self.u_modelview, 1, GL_TRUE, mv)
-
+            self.program["modelview"] = mv.flatten()
             nm = np.linalg.inv(mv[:3, :3]).T
-            glUniformMatrix3fv(self.u_normal_matrix, 1, GL_TRUE, nm)
-
-            glUniform3fv(self.u_base_color, 1, np.array(v["color"], dtype=np.float32))
+            self.program["normal_matrix"] = nm.flatten()
+            self.program["base_color"] = np.array(v["color"], dtype=np.float32)
 
             glBindBuffer(GL_ARRAY_BUFFER, v["vbo"][0])
             stride = v["stride"]
-            glEnableVertexAttribArray(0)
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(0))
-            glEnableVertexAttribArray(1)
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(12))
-            glEnableVertexAttribArray(2)
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(24))
+            glEnableVertexAttribArray(self.pos_loc)
+            glVertexAttribPointer(self.pos_loc, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(0))
+            glEnableVertexAttribArray(self.normal_loc)
+            glVertexAttribPointer(self.normal_loc, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(12))
+            glEnableVertexAttribArray(self.tex_loc)
+            glVertexAttribPointer(self.tex_loc, 2, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(24))
 
             if v["index_count"] > 0:
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v["vbo"][1])
@@ -372,7 +370,7 @@ class CityViewer:
             else:
                 glDrawArrays(GL_TRIANGLES, 0, v["count"])
 
-        glUseProgram(0)
+        self.program.stop()
 
 
 if __name__ == "__main__":
