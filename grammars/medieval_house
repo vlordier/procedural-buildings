@@ -1,0 +1,21 @@
+whiteR = 0.90
+whiteG = 0.85
+whiteB = 0.80
+timberR = 0.30
+timberG = 0.20
+timberB = 0.15
+roofR = 0.65
+roofG = 0.35
+roofB = 0.20
+glassR = 0.60
+glassG = 0.70
+glassB = 0.80
+plot --> S(~1, ~1, 8){medievalHouse}
+medievalHouse --> split(z){~5 : walls | ~2.5 : colour(roofR, roofG, roofB){I(triangle)}}
+walls --> comp(f){front : colour(whiteR, whiteG, whiteB){facade} | left : I(rect) | right : I(rect) | back : I(rect)}
+facade --> split(z){~2 : split(x){~0.3 : timber | ~2 : panelWin | ~0.3 : timber | ~2 : doorPanel | ~0.3 : timber} | ~3 : split(x){~0.3 : timber | ~2 : panelWin | ~0.3 : timber | ~2 : panelWin | ~0.3 : timber}}
+panelWin --> colour(whiteR, whiteG, whiteB){split(x){~0.15 : timber | ~1.7 : windowUnit | ~0.15 : timber}}
+windowUnit --> split(x){~0.15 : timber | ~1.4 : colour(glassR, glassG, glassB){I(rect)} | ~0.15 : timber}
+doorPanel --> colour(whiteR, whiteG, whiteB){split(x){~0.15 : timber | ~1.7 : door | ~0.15 : timber}}
+door --> colour(timberR, timberG, timberB){I(rect)}
+timber --> colour(timberR, timberG, timberB){I(rect)}
