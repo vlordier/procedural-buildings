@@ -300,6 +300,11 @@ class BuildingGenerator:
         p.grammarDir = ""
         p.grammarToGlb(self.grammar_path, self.start_rule, self.start_scope, path)
 
+    def to_gltf(self, path: str):
+        p = Processor()
+        p.grammarDir = ""
+        p.grammarToGltf(self.grammar_path, self.start_rule, self.start_scope, path)
+
     def to_obj(self, path: str):
         p = Processor()
         p.grammarDir = ""

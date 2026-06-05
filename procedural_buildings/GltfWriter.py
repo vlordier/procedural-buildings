@@ -1,4 +1,5 @@
 import json
+import os
 import struct
 
 from .GeometryAccumulator import GeometryAccumulator
@@ -30,6 +31,17 @@ class GltfWriter:
             f.write(json_padded)
             f.write(struct.pack("<II", len(bin_padded), CHUNK_BIN))
             f.write(bin_padded)
+
+    def write_gltf(self, path: str):
+        """Write as separate .gltf JSON + .bin file (human-readable)."""
+        doc, bin_data = self._build()
+        bin_name = os.path.basename(path).rsplit(".", 1)[0] + ".bin"
+        doc["buffers"][0]["uri"] = bin_name
+        with open(path, "w") as f:
+            json.dump(doc, f, indent=2)
+        bin_path = path.rsplit(".", 1)[0] + ".bin"
+        with open(bin_path, "wb") as f:
+            f.write(bin_data)
 
     def _build(self):
         acc = self.acc

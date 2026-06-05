@@ -96,7 +96,7 @@ class Processor:
         return fileNames
 
     def grammarToGlb(self, grammarName, startRule, startScope, outFile):
-        opGraph = self.grammarFileToOpGraph(grammarName, startRule)
+        opGraph = self._get_op_graph(grammarName, startRule)
         log.info("Running op graph to create geometry")
         acc = GeometryAccumulator()
         acc.reset()
@@ -104,6 +104,36 @@ class Processor:
         log.info("Writing glb to file")
         writer = GltfWriter(acc)
         writer.write(outFile)
+
+    def grammarToGltf(self, grammarName, startRule, startScope, outFile):
+        opGraph = self._get_op_graph(grammarName, startRule)
+        log.info("Running op graph to create geometry")
+        acc = GeometryAccumulator()
+        acc.reset()
+        opGraph.run(acc, startScope, {})
+        log.info("Writing gltf to file")
+        writer = GltfWriter(acc)
+        writer.write_gltf(outFile)
+
+    def _get_op_graph(self, grammarName, startRule):
+        try:
+            return self.grammarFileToOpGraph(grammarName, startRule)
+        except KeyError:
+            pass
+        try:
+            return self.grammarFileToOpGraph(grammarName, "plot")
+        except KeyError:
+            pass
+        # Fallback: use the first available rule in the grammar
+        with open(grammarName) as f:
+            grammar_text = f.read()
+        from .parsing.GrammarParser import GrammarParser
+
+        parsed = GrammarParser().parse(grammar_text)
+        for rule_name in parsed:
+            if rule_name not in ("width", "depth", "height"):
+                return parsed[rule_name]
+        raise RuntimeError(f"No usable start rule found in {grammarName}")
 
     # Given a grammar generate some op graphs then combine those into one
     def grammarToRegenOpGraph(self, grammarName, startRule, n):
