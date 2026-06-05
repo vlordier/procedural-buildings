@@ -60,6 +60,15 @@ class TestGrammarParser:
         result = parser.parse("h = 3\nplot --> S(~1, ~1, h){I(rect)}\n")
         assert isinstance(result, dict)
 
+    def test_parse_multi_body_pipe(self):
+        parser = GrammarParser()
+        result = parser.parse("plot --> I(rect) | I(triangle) | I(pyramid)\n")
+        assert isinstance(result, dict)
+        assert "plot" in result
+        from procedural_buildings.Ops import OpChooseRuleWithPriority
+
+        assert isinstance(result["plot"], OpChooseRuleWithPriority)
+
     def test_parse_conditional(self):
         parser = GrammarParser()
         result = parser.parse("wall : wallPattern == 1 --> colour(1,0,0){I(rect)}\n")

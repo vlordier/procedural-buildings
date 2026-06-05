@@ -69,14 +69,23 @@ class Parser(SlyParser):
     def rules(self, p):
         return [p.rule]
 
-    @_("left ARROW right NEWLINE")
+    @_("left ARROW rule_body_list NEWLINE")
     def rule(self, p):
-        newRule = Rule(p.left, p.right)
-        if newRule.label in self.ruleFromLabel:
-            self.ruleFromLabel[newRule.label].append(newRule)
-        else:
-            self.ruleFromLabel[newRule.label] = [newRule]
-        return newRule
+        for body in p.rule_body_list:
+            newRule = Rule(p.left, body)
+            if newRule.label in self.ruleFromLabel:
+                self.ruleFromLabel[newRule.label].append(newRule)
+            else:
+                self.ruleFromLabel[newRule.label] = [newRule]
+        return p.rule_body_list[-1]
+
+    @_("right")
+    def rule_body_list(self, p):
+        return [p.right]
+
+    @_("rule_body_list BAR right")
+    def rule_body_list(self, p):
+        return p.rule_body_list + [p.right]
 
     @_("ruleName")
     def left(self, p):
