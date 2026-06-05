@@ -121,6 +121,10 @@ class Op:
         self.childOps = kwargs.get("childOps")
         self.ruleLabel = None
 
+    @staticmethod
+    def _scope_env(env, scope):
+        return {**env, "width": scope.size[0], "depth": scope.size[1], "height": scope.size[2]}
+
     def addParams(self, paramNames):
         self.paramNames = paramNames
 
@@ -260,7 +264,7 @@ class OpSplit(Op):
         axis, sizes = self.args.evaluate(env)
         childScopes = scope.split(axis, sizes)
         for childOp, childScope in zip(self.childOps, childScopes, strict=True):
-            childOp.run(context, childScope, env)
+            childOp.run(context, childScope, self._scope_env(env, childScope))
 
     def simplify(self, seenOps, combArgs=False):
         newMe = Op.simplify(self, seenOps, combArgs)
@@ -298,7 +302,7 @@ class OpRepeat(Op):
         childScopes = scope.repeat(axis, size)
 
         for childScope in childScopes:
-            childOp.run(context, childScope, env)
+            childOp.run(context, childScope, self._scope_env(env, childScope))
 
     # Also include the axis in the hash
     # because we can't combine operators with this value differing
@@ -317,7 +321,7 @@ class OpRepeatN(Op):
         childScopes = scope.repeatN(axis, n)
 
         for childScope in childScopes:
-            childOp.run(context, childScope, env)
+            childOp.run(context, childScope, self._scope_env(env, childScope))
 
     # Also include the axis in the hash
     # because we can't combine operators with this value differing
@@ -333,7 +337,7 @@ class OpComp(Op):
         faces = self.args[0]
         childScopes = [scope.comp(face) for face in faces]
         for childOp, childScope in zip(self.childOps, childScopes, strict=True):
-            childOp.run(context, childScope, env)
+            childOp.run(context, childScope, self._scope_env(env, childScope))
 
 
 # Colour current context
@@ -344,7 +348,7 @@ class OpColour(Op):
         col = self.args.evaluate(env)
         context.colour(col, scope)
         if self.childOps:
-            self.childOps[0].run(context, scope, env)
+            self.childOps[0].run(context, scope, self._scope_env(env, scope))
 
 
 # Given a list of rules, choose one at random according to their priorirties
@@ -366,12 +370,7 @@ class OpChooseRuleWithPriority(Op):
         return self.childOps[filteredPriorities[i][0]]
 
     def run(self, context, scope, env):
-        scope_env = {
-            **env,
-            "width": scope.size[0],
-            "depth": scope.size[1],
-            "height": scope.size[2],
-        }
+        scope_env = self._scope_env(env, scope)
         for key, val in scope.neighbors.items():
             if key == "left_width":
                 scope_env["left_width"] = val[0]
@@ -468,7 +467,8 @@ class OpResizeScope(Op):
 
     def run(self, context, scope, env):
         v = self.args.evaluate(env)
-        self.childOps[0].run(context, scope.resize(v), env)
+        newScope = scope.resize(v)
+        self.childOps[0].run(context, newScope, self._scope_env(env, newScope))
 
 
 # Scale the current scope by factor(s)
@@ -477,7 +477,8 @@ class OpScale(Op):
 
     def run(self, context, scope, env):
         v = self.args.evaluate(env)
-        self.childOps[0].run(context, scope.scale(v), env)
+        newScope = scope.scale(v)
+        self.childOps[0].run(context, newScope, self._scope_env(env, newScope))
 
 
 # Translate the current object
@@ -486,7 +487,8 @@ class OpTranslate(Op):
 
     def run(self, context, scope, env):
         v = self.args.evaluate(env)
-        self.childOps[0].run(context, scope.translate(v), env)
+        newScope = scope.translate(v)
+        self.childOps[0].run(context, newScope, self._scope_env(env, newScope))
 
 
 # Rotate the current object
@@ -495,7 +497,8 @@ class OpRotate(Op):
 
     def run(self, context, scope, env):
         axis, angle = self.args.evaluate(env)
-        self.childOps[0].run(context, scope.rotate(axis, angle), env)
+        newScope = scope.rotate(axis, angle)
+        self.childOps[0].run(context, newScope, self._scope_env(env, newScope))
 
 
 # Put a primitive in the current scope
@@ -544,8 +547,8 @@ class OpInset(Op):
         innerOp = self.childOps[1]
         frameScopes, innerScope = scope.inset(amount)
         for frameScope in frameScopes:
-            frameOp.run(context, frameScope, env)
-        innerOp.run(context, innerScope, env)
+            frameOp.run(context, frameScope, self._scope_env(env, frameScope))
+        innerOp.run(context, innerScope, self._scope_env(env, innerScope))
 
     def simplify(self, seenOps, combArgs=False):
         childOps = [c.simplify(seenOps, combArgs) for c in self.childOps]
@@ -572,8 +575,8 @@ class OpOpening(Op):
         innerOp = self.childOps[1]
         frameScopes, childScope = scope.opening(depth)
         for frameScope in frameScopes:
-            frameOp.run(context, frameScope, env)
-        innerOp.run(context, childScope, env)
+            frameOp.run(context, frameScope, self._scope_env(env, frameScope))
+        innerOp.run(context, childScope, self._scope_env(env, childScope))
 
     def simplify(self, seenOps, combArgs=False):
         childOps = [c.simplify(seenOps, combArgs) for c in self.childOps]
@@ -606,6 +609,6 @@ class OpSetParams(Op):
         # set by this operation
         child = self.childOps[0]
         # Update the environment with the param values
-        envNew = env.copy()
+        envNew = self._scope_env(env, scope)
         envNew.update(zip(child.paramNames, paramVals, strict=True))
         child.run(context, scope, envNew)
