@@ -1,0 +1,3 @@
+plot --> S(~1, ~1, 12){checkWidth}
+checkWidth : width > 10 --> split(x){~1 : colour(1,0,0){I(rect)} | ~1 : colour(0,1,0){I(rect)}}
+checkWidth : width <= 10 --> I(rect)
