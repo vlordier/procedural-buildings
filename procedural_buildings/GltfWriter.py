@@ -1,0 +1,157 @@
+import json
+import struct
+
+from .GeometryAccumulator import GeometryAccumulator
+from .materials import get_material
+
+GLB_MAGIC = 0x46546C67
+GLB_VERSION = 2
+CHUNK_JSON = 0x4E4F534A
+CHUNK_BIN = 0x004E4942
+
+FLOAT_SIZE = 4
+
+
+class GltfWriter:
+    def __init__(self, accumulator: GeometryAccumulator):
+        self.acc = accumulator
+
+    def write(self, path: str):
+        doc, bin_data = self._build()
+        json_bytes = json.dumps(doc, separators=(",", ":")).encode("utf-8")
+        json_padded = self._pad(json_bytes, 4)
+        bin_padded = self._pad(bin_data, 4)
+
+        length = 12 + 8 + len(json_padded) + 8 + len(bin_padded)
+        with open(path, "wb") as f:
+            f.write(struct.pack("<II", GLB_MAGIC, GLB_VERSION))
+            f.write(struct.pack("<I", length))
+            f.write(struct.pack("<II", len(json_padded), CHUNK_JSON))
+            f.write(json_padded)
+            f.write(struct.pack("<II", len(bin_padded), CHUNK_BIN))
+            f.write(bin_padded)
+
+    def _build(self):
+        acc = self.acc
+        vert_count = acc.vertex_count
+        tri_count = len(acc.indices) // 3
+
+        mat_names = list(dict.fromkeys(acc.material_names))
+
+        vert_stride = (3 + 3 + 2) * FLOAT_SIZE
+        vert_data = bytearray()
+        for i in range(vert_count):
+            p = acc.positions[i]
+            vert_data += struct.pack("<fff", p[0], p[1], p[2])
+            if i < len(acc.normals):
+                n = acc.normals[i]
+                vert_data += struct.pack("<fff", n[0], n[1], n[2])
+            else:
+                vert_data += struct.pack("<fff", 0.0, 1.0, 0.0)
+            if i < len(acc.uvs):
+                uv = acc.uvs[i]
+                vert_data += struct.pack("<ff", uv[0], uv[1])
+            else:
+                vert_data += struct.pack("<ff", 0.0, 0.0)
+
+        index_data = bytearray()
+        for idx in acc.indices:
+            index_data += struct.pack("<I", idx)
+
+        vert_size = len(vert_data)
+        index_size = len(index_data)
+        bin_data = bytes(vert_data + index_data)
+
+        accessors = [
+            {
+                "bufferView": 0,
+                "componentType": 5126,
+                "count": vert_count,
+                "type": "VEC3",
+                "min": [
+                    min(p[0] for p in acc.positions),
+                    min(p[1] for p in acc.positions),
+                    min(p[2] for p in acc.positions),
+                ],
+                "max": [
+                    max(p[0] for p in acc.positions),
+                    max(p[1] for p in acc.positions),
+                    max(p[2] for p in acc.positions),
+                ],
+            },
+            {
+                "bufferView": 1,
+                "componentType": 5126,
+                "count": vert_count,
+                "type": "VEC3",
+            },
+            {
+                "bufferView": 2,
+                "componentType": 5126,
+                "count": vert_count,
+                "type": "VEC2",
+            },
+            {
+                "bufferView": 3,
+                "componentType": 5125,
+                "count": tri_count * 3,
+                "type": "SCALAR",
+            },
+        ]
+
+        buffer_views = [
+            {"buffer": 0, "byteOffset": 0, "byteLength": vert_size, "byteStride": vert_stride},
+            {"buffer": 0, "byteOffset": 0, "byteLength": vert_size, "byteStride": vert_stride},
+            {"buffer": 0, "byteOffset": 0, "byteLength": vert_size, "byteStride": vert_stride},
+            {"buffer": 0, "byteOffset": vert_size, "byteLength": index_size},
+        ]
+
+        materials = []
+        for name in mat_names:
+            preset = get_material(name)
+            bc = preset.get("base_color", [0.7, 0.7, 0.7, 1.0])
+            if len(bc) == 3:
+                bc = list(bc) + [1.0]
+            materials.append({
+                "name": name,
+                "pbrMetallicRoughness": {
+                    "baseColorFactor": bc,
+                    "roughnessFactor": preset.get("roughness", 0.5),
+                    "metallicFactor": preset.get("metallic", 0.0),
+                },
+            })
+
+        doc = {
+            "asset": {"version": "2.0", "generator": "procedural_buildings"},
+            "scene": 0,
+            "scenes": [{"nodes": [0]}],
+            "nodes": [{"mesh": 0}],
+            "meshes": [
+                {
+                    "primitives": [
+                        {
+                            "attributes": {
+                                "POSITION": 0,
+                                "NORMAL": 1,
+                                "TEXCOORD_0": 2,
+                            },
+                            "indices": 3,
+                            "material": 0,
+                        }
+                    ]
+                }
+            ],
+            "accessors": accessors,
+            "bufferViews": buffer_views,
+            "buffers": [{"byteLength": len(bin_data)}],
+            "materials": materials,
+        }
+
+        return doc, bin_data
+
+    @staticmethod
+    def _pad(data: bytes, alignment: int) -> bytes:
+        remainder = len(data) % alignment
+        if remainder:
+            data += b" " * (alignment - remainder)
+        return data

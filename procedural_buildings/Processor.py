@@ -9,6 +9,8 @@ import numpy as np
 from ._constants import NUM_PRIMS_SCALE_FACTOR, SPEEDTEST_REPEATS, SPEEDTEST_SCOPE_SIZE
 from ._logging import get_logger
 from .ContextObj import ContextOBJ
+from .GeometryAccumulator import GeometryAccumulator
+from .GltfWriter import GltfWriter
 from .ObjReader import objsToOpGraph, objToOpGraph
 from .Ops import OpNil, OpRepeat, OpSplit
 from .parsing.GrammarParser import GrammarParser
@@ -92,6 +94,16 @@ class Processor:
             self.opGraphToObj(opGraph, startScope, fname)
             fileNames.append(fname)
         return fileNames
+
+    def grammarToGlb(self, grammarName, startRule, startScope, outFile):
+        opGraph = self.grammarFileToOpGraph(grammarName, startRule)
+        log.info("Running op graph to create geometry")
+        acc = GeometryAccumulator()
+        acc.reset()
+        opGraph.run(acc, startScope, {})
+        log.info("Writing glb to file")
+        writer = GltfWriter(acc)
+        writer.write(outFile)
 
     # Given a grammar generate some op graphs then combine those into one
     def grammarToRegenOpGraph(self, grammarName, startRule, n):

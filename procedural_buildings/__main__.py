@@ -159,7 +159,9 @@ def main(argv):
                 objFiles = f.read().splitlines()
         p.objsToGrammar(objFiles, outFile)
     else:
-        if filePerObj:
+        if outFile.endswith(".glb"):
+            p.grammarToGlb(inFile, startRule, startScope, outFile)
+        elif filePerObj:
             p.grammarToManyObjFiles(inFile, startRule, startScope, n, outFile)
         else:
             p.grammarToManyObjs(inFile, startRule, startScope, n, sep, outFile)

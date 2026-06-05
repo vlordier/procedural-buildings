@@ -1,5 +1,8 @@
+from .Primitive import basicPrims
+
+
 class GeometryAccumulator:
-    def __init__(self):
+    def __init__(self, prims=basicPrims):
         self.positions = []
         self.normals = []
         self.uvs = []
@@ -7,6 +10,7 @@ class GeometryAccumulator:
         self.material_names = []
         self.vertex_count = 0
         self.current_material = None
+        self.prims = prims
 
     def add_primitive(self, prim, scope):
         verts = scope.putVertsInScope(prim.verts, prim.boundingBox)
@@ -26,6 +30,16 @@ class GeometryAccumulator:
         if self.current_material:
             self.material_names.append(self.current_material)
         self.vertex_count += len(verts)
+
+    def addPrim(self, primName, scope):
+        if primName not in self.prims:
+            prim = self.prims.get("rect", list(self.prims.values())[0])
+        else:
+            prim = self.prims[primName]
+        self.add_primitive(prim, scope)
+
+    def colour(self, col, scope):
+        pass
 
     def reset(self):
         self.positions = []
