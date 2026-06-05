@@ -382,7 +382,7 @@ class OpChooseRuleWithPriority(Op):
                 scope_env["right_depth"] = val[1]
                 scope_env["right_height"] = val[2]
         child = self.chooseChild(scope_env)
-        child.run(context, scope, env)
+        child.run(context, scope, scope_env)
 
     def exampleTree(self, env):
         return self.chooseChild(env).exampleTree(env)
