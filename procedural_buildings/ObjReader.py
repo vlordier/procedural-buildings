@@ -16,7 +16,19 @@ def objToOpGraph(fname, primDict=None):
     container = Container(0)
     for primData in splitData:
         lines = primData.split("\n")
-        primName = lines[0]
+        primLine = lines[0]
+        colour = None
+        colour_marker = " # colour("
+        if colour_marker in primLine:
+            name_part, colour_part = primLine.split(colour_marker, 1)
+            primName = name_part.strip()
+            colour_str = colour_part.rstrip(")")
+            try:
+                colour = tuple(float(x) for x in colour_str.split(","))
+            except ValueError:
+                colour = None
+        else:
+            primName = primLine.strip()
         firstCoords = [round(float(c), OBJ_COORD_PRECISION) for c in lines[1].split(" ")[1:4]]
         minCoords = firstCoords
         maxCoords = firstCoords
@@ -34,7 +46,7 @@ def objToOpGraph(fname, primDict=None):
             primDict[primName] = p
 
         # Create a bounding box for the primitive object
-        box = Box([[a, b] for (a, b) in zip(minCoords, maxCoords, strict=True)], primName)
+        box = Box([[a, b] for (a, b) in zip(minCoords, maxCoords, strict=True)], primName, colour=colour)
         boxes.append(box)
         # Add the box to the box-bounding container
         container.addBox(box)

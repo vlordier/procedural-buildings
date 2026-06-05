@@ -6,19 +6,20 @@ from ._constants import MAX_CONSECUTIVE_FAILURES, NUM_AXES
 
 # Represents a bounding box for a primitive object
 from ._logging import get_logger
-from .Ops import OpNil, OpPrimitive, OpSplit
+from .Ops import OpColour, OpNil, OpPrimitive, OpSplit
 from .parsing.Rule import Size
 
 log = get_logger(__name__)
 
 
 class Box:
-    def __init__(self, bounds, prim):
+    def __init__(self, bounds, prim, colour=None):
         self.boundVals = [[low, high] for low, high in bounds]
-        # Convert values to Bound objects
         self.bounds = tuple((Bound(low, True, self), Bound(high, False, self)) for (low, high) in self.boundVals)
         self.prim = OpPrimitive(prim)
-        # container points to the smallest Container containing this Box
+        self.colour = colour
+        if colour is not None:
+            self.prim = OpColour(colour, childOps=[self.prim])
         self.container = None
 
     def matToUnitSquare(self):
