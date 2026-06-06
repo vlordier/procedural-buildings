@@ -12,21 +12,41 @@ import bpy
 
 def read_usda(path):
     """Parse our simple USD format for building data."""
-    buildings = []
     with open(path) as f:
-        text = f.read()
+        lines = f.readlines()
+    buildings = []
     base_dir = os.path.dirname(os.path.abspath(path))
-    for m in re.finditer(r'def Xform "building_\d+" \([^)]+\) \{([^}]+)\}', text, re.DOTALL):
-        payload_match = re.search(r"@([^@]+)@", m.group(1))
-        trans_match = re.search(r"xformOp:translate = \(([^)]+)\)", m.group(0))
-        rot_match = re.search(r"xformOp:rotateXYZ = \(([^)]+)\)", m.group(0))
-        if payload_match and trans_match:
-            glb_rel = payload_match.group(1)
-            glb_path = os.path.join(base_dir, glb_rel)
-            tx, ty, tz = (float(x) for x in trans_match.group(1).split(","))
-            ry = float(rot_match.group(1).split(",")[1]) if rot_match else 0
-            if os.path.exists(glb_path):
-                buildings.append({"glb": glb_path, "pos": (tx, ty, tz), "rot": ry})
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if 'def Xform "building_' in line:
+            # Collect the block until the matching }
+            block = ""
+            depth = 0
+            started = False
+            while i < len(lines):
+                c = lines[i]
+                block += c
+                if "{" in c:
+                    depth += 1
+                    started = True
+                if "}" in c:
+                    depth -= 1
+                if started and depth == 0:
+                    break
+                i += 1
+            # Extract payload and transform
+            pm = re.search(r"@([^@]+\.glb)@", block)
+            tm = re.search(r"xformOp:translate = \(([^)]+)\)", block)
+            rm = re.search(r"xformOp:rotateXYZ = \(([^)]+)\)", block)
+            if pm and tm:
+                glb_rel = pm.group(1)
+                glb_path = os.path.join(base_dir, glb_rel)
+                tx, ty, tz = (float(x) for x in tm.group(1).split(","))
+                ry = float(rm.group(1).split(",")[1]) if rm else 0
+                if os.path.exists(glb_path):
+                    buildings.append({"glb": glb_path, "pos": (tx, ty, tz), "rot": ry})
+        i += 1
     return buildings
 
 
@@ -76,6 +96,12 @@ def setup_scene(buildings):
     sun = bpy.context.active_object
     sun.data.energy = 5
     sun.rotation_euler = (0.8, 0, 0.5)
+
+    # Add camera
+    bpy.ops.object.camera_add(location=(150, -100, 80))
+    cam = bpy.context.active_object
+    cam.rotation_euler = (1.1, 0, 0.8)
+    scene.camera = cam
 
     # Import each building GLB
     for i, b in enumerate(buildings):
