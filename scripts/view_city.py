@@ -181,6 +181,7 @@ class CityViewer:
             fullscreen=False, width=1280, height=720, caption="City Viewer"
         )
         self.win.set_exclusive_mouse(True)
+        self.win.push_handlers(self)
 
         ground, buildings = read_usda(usda_path)
         self.meshes = []
