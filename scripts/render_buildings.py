@@ -17,13 +17,28 @@ def generate_glbs():
     os.makedirs(GLB_DIR, exist_ok=True)
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     sys.path.insert(0, project_dir)
-    from procedural_buildings import BuildingGenerator
+    from procedural_buildings.generator import SHOWCASE_GRAMMARS
+    from procedural_buildings.Processor import Processor
+    import gin
 
-    for i in range(NUM_BUILDINGS):
-        gen = BuildingGenerator.random(seed=i, materials="configs/materials_basic.gin")
-        path = os.path.join(GLB_DIR, f"building_{i:04d}.glb")
-        gen.to_glb(path)
-        print(f"[{i+1}/{NUM_BUILDINGS}] Generated {path}")
+    picks = SHOWCASE_GRAMMARS[:NUM_BUILDINGS]
+    import numpy as np
+    from procedural_buildings.Scope import Scope
+    for i, g in enumerate(picks):
+        gin.config.clear_config()
+        gin.config.unlock_config()
+        gin.parse_config_files_and_bindings(
+            [os.path.join(project_dir, "configs/materials_basic.gin")],
+            [],
+        )
+        p = Processor()
+        p.grammarDir = os.path.join(project_dir, "grammars") + os.sep
+        p.outDir = GLB_DIR + os.sep
+        out = os.path.join(GLB_DIR, f"building_{i:04d}.glb")
+        s = g["start_scope"]
+        scope = Scope.freshScope(np.array(s[:3]), np.array(s[3:]))
+        p.grammarToGlb(g["name"], g["start_rule"], scope, out)
+        print(f"[{i+1}/{NUM_BUILDINGS}] Generated {out} ({g['name']})")
     print(f"Done. {NUM_BUILDINGS} GLBs in {GLB_DIR}")
 
 
@@ -81,17 +96,31 @@ def render_glbs():
         # Import
         bpy.ops.import_scene.gltf(filepath=glb_path)
 
-        # Center and frame
-        bpy.ops.object.select_all(action="DESELECT")
+        # Compute bounds from imported meshes
+        min_x = min_y = min_z = float("inf")
+        max_x = max_y = max_z = float("-inf")
         for obj in bpy.context.scene.objects:
             if obj.type == "MESH":
-                obj.select_set(True)
-        bpy.ops.object.origin_set(type="ORIGIN_GEOMETRY", center="BOUNDS")
-        bpy.ops.object.location_clear()
-        try:
-            bpy.ops.view3d.camera_to_view_selected()
-        except RuntimeError:
-            pass  # workspace may differ
+                for corner in obj.bound_box:
+                    wx = obj.matrix_world @ __import__("mathutils").Vector(corner)
+                    min_x = min(min_x, wx.x); max_x = max(max_x, wx.x)
+                    min_y = min(min_y, wx.y); max_y = max(max_y, wx.y)
+                    min_z = min(min_z, wx.z); max_z = max(max_z, wx.z)
+
+        cx = (min_x + max_x) / 2
+        cy = (min_y + max_y) / 2
+        cz = (min_z + max_z) / 2
+        extent = max(max_x - min_x, max_y - min_y, max_z - min_z)
+        cam_dist = max(extent * 1.4, 6.0)
+
+        # Camera
+        bpy.ops.object.camera_add(location=(cx + cam_dist * 0.7, cy - cam_dist * 0.7, cz + cam_dist * 0.4))
+        cam = bpy.context.active_object
+        direction = __import__("mathutils").Vector((cx, cy, cz + extent * 0.3)) - cam.location
+        rot = direction.to_track_quat("-Z", "Y").to_euler()
+        cam.rotation_euler = rot
+        scene.camera = cam
+        cam.data.lens = 35
 
         # Render
         png_path = os.path.join(OUTPUT_DIR, f"building_{i:04d}.png")
