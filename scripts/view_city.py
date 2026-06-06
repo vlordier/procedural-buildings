@@ -15,29 +15,39 @@ VERTEX_SHADER = """
 #version 150
 in vec3 position;
 in vec3 normal;
-in vec2 texcoord;
 uniform mat4 modelview;
 uniform mat4 projection;
 uniform mat3 normal_matrix;
 uniform vec3 base_color;
 out vec3 v_normal;
-out vec2 v_texcoord;
+out vec3 v_color;
 void main() {
     gl_Position = projection * modelview * vec4(position, 1.0);
     v_normal = normalize(normal_matrix * normal);
-    v_texcoord = texcoord;
+    v_color = base_color;
 }
 """
 
 FRAGMENT_SHADER = """
 #version 150
 in vec3 v_normal;
-uniform vec3 base_color;
+in vec3 v_color;
 out vec4 fragColor;
 void main() {
     vec3 light = normalize(vec3(0.5, 1.0, 0.3));
-    float diff = max(0.0, dot(v_normal, light)) * 0.7 + 0.3;
-    fragColor = vec4(base_color * diff, 1.0);
+    float diff = max(0.0, dot(normalize(v_normal), light)) * 0.7 + 0.3;
+    fragColor = vec4(v_color * diff, 1.0);
+}
+"""
+
+FRAGMENT_SHADER = """
+#version 150
+in vec3 v_normal;
+out vec4 fragColor;
+void main() {
+    vec3 light = normalize(vec3(0.5, 1.0, 0.3));
+    float diff = max(0.0, dot(normalize(v_normal), light)) * 0.7 + 0.3;
+    fragColor = vec4(vec3(diff * 0.7), 1.0);
 }
 """
 
@@ -231,9 +241,9 @@ class CityViewer:
         vert = Shader(VERTEX_SHADER, "vertex")
         frag = Shader(FRAGMENT_SHADER, "fragment")
         self.program = ShaderProgram(vert, frag)
+        print("Uniforms:", list(self.program._uniforms.keys()))
         self.pos_loc = glGetAttribLocation(self.program.id, ctypes.c_char_p(b"position"))
         self.normal_loc = glGetAttribLocation(self.program.id, ctypes.c_char_p(b"normal"))
-        self.tex_loc = glGetAttribLocation(self.program.id, ctypes.c_char_p(b"texcoord"))
 
         # Build VBOs
         self.vbos = []
@@ -247,7 +257,6 @@ class CityViewer:
             for i in range(len(verts)):
                 vbo_data.extend(verts[i])
                 vbo_data.extend(normals[i] if i < len(normals) else [0, 1, 0])
-                vbo_data.extend(uvs[i] if i < len(uvs) else [0, 0])
 
             vbo_ids = (GLuint * 3)()
             glGenBuffers(3, vbo_ids)
@@ -269,7 +278,7 @@ class CityViewer:
                 "color": mesh.get("color", (0.7, 0.7, 0.7)),
                 "translate": mesh.get("translate", (0, 0, 0)),
                 "rotate_y": mesh.get("rotate_y", 0),
-                "stride": 8 * 4,  # 8 floats per vertex (3 pos + 3 normal + 2 uv)
+                "stride": 6 * 4,  # 6 floats per vertex (3 pos + 3 normal)
             })
 
     def on_mouse_motion(self, x, y, dx, dy):
@@ -354,7 +363,7 @@ class CityViewer:
             self.program["modelview"] = mv.flatten()
             nm = np.linalg.inv(mv[:3, :3]).T
             self.program["normal_matrix"] = nm.flatten()
-            self.program["base_color"] = np.array(v["color"], dtype=np.float32)
+            self.program["base_color"] = tuple(v["color"])
 
             glBindBuffer(GL_ARRAY_BUFFER, v["vbo"][0])
             stride = v["stride"]
@@ -362,8 +371,6 @@ class CityViewer:
             glVertexAttribPointer(self.pos_loc, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(0))
             glEnableVertexAttribArray(self.normal_loc)
             glVertexAttribPointer(self.normal_loc, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(12))
-            glEnableVertexAttribArray(self.tex_loc)
-            glVertexAttribPointer(self.tex_loc, 2, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(24))
 
             if v["index_count"] > 0:
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, v["vbo"][1])
