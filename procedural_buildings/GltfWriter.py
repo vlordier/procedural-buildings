@@ -46,9 +46,14 @@ class GltfWriter:
     def _build(self):
         acc = self.acc
         vert_count = acc.vertex_count
-        tri_count = len(acc.indices) // 3
 
         mat_names = list(dict.fromkeys(acc.material_names))
+
+        groups: dict[str | None, list[int]] = {n: [] for n in mat_names}
+        for idx, mat in zip(acc.indices, acc.material_names):
+            if mat not in groups:
+                groups[mat] = []
+            groups[mat].append(idx)
 
         vert_stride = (3 + 3 + 2) * FLOAT_SIZE
         vert_data = bytearray()
@@ -67,49 +72,45 @@ class GltfWriter:
                 vert_data += struct.pack("<ff", 0.0, 0.0)
 
         index_data = bytearray()
-        for idx in acc.indices:
-            index_data += struct.pack("<I", idx)
+        for mat in mat_names:
+            for idx in groups[mat]:
+                index_data += struct.pack("<I", idx)
 
         vert_size = len(vert_data)
         index_size = len(index_data)
         bin_data = bytes(vert_data + index_data)
 
-        accessors = [
-            {
-                "bufferView": 0,
-                "componentType": 5126,
-                "count": vert_count,
-                "type": "VEC3",
-                "min": [
-                    min(p[0] for p in acc.positions),
-                    min(p[1] for p in acc.positions),
-                    min(p[2] for p in acc.positions),
-                ],
-                "max": [
-                    max(p[0] for p in acc.positions),
-                    max(p[1] for p in acc.positions),
-                    max(p[2] for p in acc.positions),
-                ],
-            },
-            {
-                "bufferView": 1,
-                "componentType": 5126,
-                "count": vert_count,
-                "type": "VEC3",
-            },
-            {
-                "bufferView": 2,
-                "componentType": 5126,
-                "count": vert_count,
-                "type": "VEC2",
-            },
-            {
-                "bufferView": 3,
-                "componentType": 5125,
-                "count": tri_count * 3,
-                "type": "SCALAR",
-            },
+        position_min = [
+            min(p[0] for p in acc.positions),
+            min(p[1] for p in acc.positions),
+            min(p[2] for p in acc.positions),
         ]
+        position_max = [
+            max(p[0] for p in acc.positions),
+            max(p[1] for p in acc.positions),
+            max(p[2] for p in acc.positions),
+        ]
+
+        accessor_pos = {
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": vert_count,
+            "type": "VEC3",
+            "min": position_min,
+            "max": position_max,
+        }
+        accessor_norm = {
+            "bufferView": 1,
+            "componentType": 5126,
+            "count": vert_count,
+            "type": "VEC3",
+        }
+        accessor_uv = {
+            "bufferView": 2,
+            "componentType": 5126,
+            "count": vert_count,
+            "type": "VEC2",
+        }
 
         buffer_views = [
             {"buffer": 0, "byteOffset": 0, "byteLength": vert_size, "byteStride": vert_stride},
@@ -123,11 +124,11 @@ class GltfWriter:
             bc = [0.7, 0.7, 0.7, 1.0]
             roughness = 0.5
             metallic = 0.0
-            if name.startswith("col_") and hasattr(acc, "_colour_materials"):
+            if name and name.startswith("col_") and hasattr(acc, "_colour_materials"):
                 rgb = acc._colour_materials.get(name)
                 if rgb:
                     bc = rgb + [1.0]
-            else:
+            elif name:
                 preset = get_material(name)
                 bc = preset.get("base_color", [0.7, 0.7, 0.7, 1.0])
                 if len(bc) == 3:
@@ -135,7 +136,7 @@ class GltfWriter:
                 roughness = preset.get("roughness", 0.5)
                 metallic = preset.get("metallic", 0.0)
             materials.append({
-                "name": name,
+                "name": name or "default",
                 "pbrMetallicRoughness": {
                     "baseColorFactor": bc,
                     "roughnessFactor": roughness,
@@ -143,26 +144,41 @@ class GltfWriter:
                 },
             })
 
+        primitives = []
+        for mi, name in enumerate(mat_names):
+            tri_count = len(groups[name]) // 3
+            if tri_count == 0:
+                continue
+            primitives.append({
+                "attributes": {
+                    "POSITION": 0,
+                    "NORMAL": 1,
+                    "TEXCOORD_0": 2,
+                },
+                "indices": 3,
+                "material": mi,
+            })
+
+        if not primitives:
+            primitives.append({
+                "attributes": {"POSITION": 0, "NORMAL": 1, "TEXCOORD_0": 2},
+                "indices": 3,
+                "material": 0,
+            })
+
+        accessors = [accessor_pos, accessor_norm, accessor_uv, {
+            "bufferView": 3,
+            "componentType": 5125,
+            "count": index_size // 4,
+            "type": "SCALAR",
+        }]
+
         doc = {
             "asset": {"version": "2.0", "generator": "procedural_buildings"},
             "scene": 0,
             "scenes": [{"nodes": [0]}],
             "nodes": [{"mesh": 0}],
-            "meshes": [
-                {
-                    "primitives": [
-                        {
-                            "attributes": {
-                                "POSITION": 0,
-                                "NORMAL": 1,
-                                "TEXCOORD_0": 2,
-                            },
-                            "indices": 3,
-                            "material": 0,
-                        }
-                    ]
-                }
-            ],
+            "meshes": [{"primitives": primitives}],
             "accessors": accessors,
             "bufferViews": buffer_views,
             "buffers": [{"byteLength": len(bin_data)}],

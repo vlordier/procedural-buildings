@@ -24,12 +24,15 @@ class GeometryAccumulator:
         if hasattr(prim, "normals") and prim.normals:
             for n in prim.normals:
                 self.normals.append([float(n[0]), float(n[1]), float(n[2])])
+        face_count = 0
         for face in prim.faceData:
             for vert_data in face:
                 idx = int(vert_data[0]) - 1
                 self.indices.append(base + idx)
-        if self.current_material:
-            self.material_names.append(self.current_material)
+            face_count += 1
+        mat = self.current_material
+        for _ in range(face_count):
+            self.material_names.append(mat)
         self.vertex_count += len(verts)
 
     def addPrim(self, primName, scope):
