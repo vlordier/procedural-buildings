@@ -120,16 +120,26 @@ class GltfWriter:
 
         materials = []
         for name in mat_names:
-            preset = get_material(name)
-            bc = preset.get("base_color", [0.7, 0.7, 0.7, 1.0])
-            if len(bc) == 3:
-                bc = list(bc) + [1.0]
+            bc = [0.7, 0.7, 0.7, 1.0]
+            roughness = 0.5
+            metallic = 0.0
+            if name.startswith("col_") and hasattr(acc, "_colour_materials"):
+                rgb = acc._colour_materials.get(name)
+                if rgb:
+                    bc = rgb + [1.0]
+            else:
+                preset = get_material(name)
+                bc = preset.get("base_color", [0.7, 0.7, 0.7, 1.0])
+                if len(bc) == 3:
+                    bc = list(bc) + [1.0]
+                roughness = preset.get("roughness", 0.5)
+                metallic = preset.get("metallic", 0.0)
             materials.append({
                 "name": name,
                 "pbrMetallicRoughness": {
                     "baseColorFactor": bc,
-                    "roughnessFactor": preset.get("roughness", 0.5),
-                    "metallicFactor": preset.get("metallic", 0.0),
+                    "roughnessFactor": roughness,
+                    "metallicFactor": metallic,
                 },
             })
 

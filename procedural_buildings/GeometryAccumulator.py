@@ -8,6 +8,7 @@ class GeometryAccumulator:
         self.uvs = []
         self.indices = []
         self.material_names = []
+        self._colour_materials = {}
         self.vertex_count = 0
         self.current_material = None
         self.prims = prims
@@ -39,7 +40,10 @@ class GeometryAccumulator:
         self.add_primitive(prim, scope)
 
     def colour(self, col, scope):
-        pass
+        r, g, b = col[0], col[1], col[2]
+        name = f"col_{r:.2f}_{g:.2f}_{b:.2f}"
+        self._colour_materials[name] = [r, g, b]
+        self.current_material = name
 
     def reset(self):
         self.positions = []
@@ -47,6 +51,7 @@ class GeometryAccumulator:
         self.uvs = []
         self.indices = []
         self.material_names = []
+        self._colour_materials = {}
         self.vertex_count = 0
         self.current_material = None
 
